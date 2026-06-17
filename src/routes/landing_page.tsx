@@ -7,7 +7,6 @@ import {
   Lock,
   LayoutDashboard,
   Code2,
-  Sparkles,
   MonitorSmartphone,
   ChevronRight,
   Menu,
@@ -126,62 +125,33 @@ export default function LandingPage() {
       <main className="relative z-10 pt-16">
         
         {/* HERO SECTION */}
-        <section id="home" className="min-h-[90vh] flex items-center px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div className="order-2 md:order-1 space-y-6">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-100 border border-purple-200 text-purple-700 font-medium text-sm animate-bounce">
-                <Sparkles size={16} className="text-purple-500" /> Tersedia untuk Proyek Baru
-              </div>
-              <h4 className="text-5xl md:text-6xl font-extrabold text-slate-900 leading-tight">
-                 Natania Nazwa  <br/>
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-fuchsia-500">
-                 Gisella Nasyahrani
-                </span>
-              </h4>
-              <p className="text-lg text-slate-600 max-w-lg leading-relaxed">
-                Di era digital saat ini, dunia coding menjadi salah satu keterampilan penting yang terus berkembang. Sebagai siswa SMK jurusan Rekayasa Perangkat Lunak (RPL), proses belajar ini menjadi langkah awal untuk memahami bagaimana teknologi dibangun dan digunakan.
-              </p>
-              
-              <div className="flex flex-wrap gap-4 pt-4">
-                <a href="#portofolio" className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-lg shadow-purple-500/30 hover:-translate-y-1">
-                  Lihat Karya Saya <ChevronRight size={20} />
-                </a>
-                <a href="#kontak" className="flex items-center gap-2 bg-white border-2 border-purple-200 hover:border-purple-400 text-purple-700 px-6 py-3 rounded-xl font-semibold transition-all hover:-translate-y-1">
-                  Hubungi Saya
-                </a>
-              </div>
-
-              {/* Social Links */}
-              <div className="flex gap-4 pt-6">
-                <a href="https://github.com/natania-nazwa" className="p-3 bg-white rounded-full text-slate-500 hover:text-purple-600 hover:bg-purple-50 shadow-sm border border-slate-100 transition-colors"><FaGithub size={22} /></a>
-                <a href="mailto:nazwanasyahrani@gmail.com" className="p-3 bg-white rounded-full text-slate-500 hover:text-purple-600 hover:bg-purple-50 shadow-sm border border-slate-100 transition-colors"><Mail size={22} /></a>
-              </div>
+        <section id="home" className="min-h-[90vh] flex items-center justify-center px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+          <div className="max-w-4xl mx-auto text-center space-y-6">
+            <h4 className="text-5xl md:text-6xl font-extrabold text-slate-900 leading-tight animate-fade-in-up">
+              Natania Nazwa
+              <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-fuchsia-500">
+                Gisella Nasyahrani
+              </span>
+            </h4>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed animate-fade-in-up-delay">
+              Di era digital saat ini, dunia coding menjadi salah satu keterampilan penting yang terus berkembang. Sebagai siswa SMK jurusan Rekayasa Perangkat Lunak (RPL), proses belajar ini menjadi langkah awal untuk memahami bagaimana teknologi dibangun dan digunakan.
+            </p>
+            <div className="flex flex-wrap justify-center gap-4 pt-4">
+              <a href="#portofolio" className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-lg shadow-purple-500/30 hover:-translate-y-1">
+                Lihat Karya Saya <ChevronRight size={20} />
+              </a>
+              <a href="#kontak" className="flex items-center gap-2 bg-white border-2 border-purple-200 hover:border-purple-400 text-purple-700 px-6 py-3 rounded-xl font-semibold transition-all hover:-translate-y-1">
+                Hubungi Saya
+              </a>
             </div>
-
-            {/* Hero Image / Illustration */}
-            <div className="order-1 md:order-2 flex justify-center relative">
-              <div className="absolute inset-0 bg-gradient-to-tr from-purple-400 to-fuchsia-300 rounded-full blur-3xl opacity-30"></div>
-              <img 
-                src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=800" 
-                alt="Developer Workspace" 
-                className="relative z-10 w-full max-w-md rounded-3xl shadow-2xl border-4 border-white transform rotate-3 hover:rotate-0 transition-transform duration-500"
-              />
-              
-              {/* Floating Badges */}
-              <div className="absolute -left-6 top-1/4 bg-white p-4 rounded-2xl shadow-xl z-20 flex items-center gap-3 animate-bounce" style={{ animationDuration: '3s' }}>
-                <div className="bg-green-100 p-2 rounded-full"><MonitorSmartphone size={24} className="text-green-600" /></div>
-                <div>
-                  <p className="text-xs text-slate-500 font-bold">Responsif</p>
-                  <p className="text-sm font-bold text-slate-800">100% Mobile</p>
-                </div>
-              </div>
-              <div className="absolute -right-6 bottom-1/4 bg-white p-4 rounded-2xl shadow-xl z-20 flex items-center gap-3 animate-bounce" style={{ animationDuration: '4s' }}>
-                <div className="bg-purple-100 p-2 rounded-full"><Code2 size={24} className="text-purple-600" /></div>
-                <div>
-                  <p className="text-xs text-slate-500 font-bold">Clean Code</p>
-                  <p className="text-sm font-bold text-slate-800">Standar Industri</p>
-                </div>
-              </div>
+            <div className="flex justify-center gap-4 pt-6">
+              <a href="https://github.com/natania-nazwa" className="p-3 bg-white rounded-full text-slate-500 hover:text-purple-600 hover:bg-purple-50 shadow-sm border border-slate-100 transition-colors">
+                <FaGithub size={22} />
+              </a>
+              <a href="mailto:nazwanasyahrani@gmail.com" className="p-3 bg-white rounded-full text-slate-500 hover:text-purple-600 hover:bg-purple-50 shadow-sm border border-slate-100 transition-colors">
+                <Mail size={22} />
+              </a>
             </div>
           </div>
         </section>
