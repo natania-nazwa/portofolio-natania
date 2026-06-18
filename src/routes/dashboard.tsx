@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
 import { useState, type SetStateAction } from 'react';
 import { FaGithub } from "react-icons/fa";
 import { 
@@ -23,10 +23,29 @@ import {
   LayoutGrid,
   Layers,
   UploadCloud,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Home
 } from 'lucide-react';
 
 export const Route = createFileRoute('/dashboard')({
+    beforeLoad: () => {
+      const token = localStorage.getItem("token");
+      const role = localStorage.getItem("role");
+
+      // Belum login
+      if (!token) {
+        throw redirect({
+          to: "/login",
+        });
+      }
+
+      // Bukan admin
+      if (role !== "admin") {
+        throw redirect({
+          to: "/login",
+        });
+      }
+    },
     component: Dashboard,
 });
 
@@ -53,7 +72,7 @@ export default function Dashboard() {
 
   // ==================== STATE KARYA SAYA (PORTOFOLIO) ====================
   const [isEditingPortfolio, setIsEditingPortfolio] = useState(false);
-  const [editPortfolioId, setEditPortfolioId] = useState(null);
+  const [editPortfolioId, setEditPortfolioId] = useState<number | null>(null);
   const [portfolios, setPortfolios] = useState([
     {
       id: 1,
@@ -73,7 +92,7 @@ export default function Dashboard() {
 
   // ==================== STATE KEAHLIAN (SKILLS) ====================
   const [isEditingSkill, setIsEditingSkill] = useState(false);
-  const [editSkillId, setEditSkillId] = useState(null);
+  const [editSkillId, setEditSkillId] = useState<number | null>(null);
   const [skills, setSkills] = useState([
     {
       id: 1,
@@ -102,7 +121,7 @@ export default function Dashboard() {
 
 
   // ==================== HANDLERS PORTOFOLIO ====================
-  const handleSubmitPortfolio = (e: { preventDefault: () => void; }) => {
+  const handleSubmitPortfolio = (e: React.FormEvent) => {
     e.preventDefault();
     const finalGambar = formGambar.trim() || 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=500&auto=format&fit=crop&q=60';
 
@@ -122,17 +141,17 @@ export default function Dashboard() {
     }
   };
 
-  const startEditPortfolioMode = (portfolio: { id: any; judul: any; deskripsi: any; tag: any; gambar: any; github: any; }) => {
+  const startEditPortfolioMode = (portfolio: { id: number; judul: string; deskripsi: string; tag: string; gambar: string; github: string }) => {
     setIsEditingPortfolio(true);
     setEditPortfolioId(portfolio.id);
     setFormJudul(portfolio.judul);
     setFormDeskripsi(portfolio.deskripsi);
     setFormTag(portfolio.tag);
     setFormGambar(portfolio.gambar);
-    
+
     // Deteksi jika gambar sebelumnya adalah hasil upload (base64) atau URL biasa
     setImageInputType(portfolio.gambar && portfolio.gambar.startsWith('data:image') ? 'file' : 'url');
-    
+
     setFormGithub(portfolio.github === 'https://github.com' ? '' : portfolio.github);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     showToast('Mode edit aktif.');
@@ -169,9 +188,9 @@ export default function Dashboard() {
 
 
   // ==================== HANDLERS KEAHLIAN ====================
-  const handleSubmitSkill = (e: { preventDefault: () => void; }) => {
+  const handleSubmitSkill = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (isEditingSkill) {
       setSkills(skills.map(item => item.id === editSkillId ? {
         ...item, judul: formSkillJudul, deskripsi: formSkillDeskripsi, tag: formSkillTag
@@ -188,7 +207,7 @@ export default function Dashboard() {
     }
   };
 
-  const startEditSkillMode = (skill: { id: any; judul: any; deskripsi: any; tag: any; }) => {
+  const startEditSkillMode = (skill: { id: number; judul: string; deskripsi: string; tag: string }) => {
     setIsEditingSkill(true);
     setEditSkillId(skill.id);
     setFormSkillJudul(skill.judul);
@@ -210,7 +229,7 @@ export default function Dashboard() {
 
 
   // ==================== DELETE MODAL HANDLERS ====================
-  const triggerDeleteConfirm = (type: string, data: { id: number; judul: string; deskripsi: string; tag: string; gambar?: string; github?: string; }) => {
+  const triggerDeleteConfirm = (type: string, data: { id: number; judul: string; deskripsi: string; tag: string; gambar?: string; github?: string }) => {
     setItemToDelete({ type, data });
     setShowDeleteModal(true);
   };
@@ -233,7 +252,7 @@ export default function Dashboard() {
 
 
   // ==================== LOGIN / LOGOUT ====================
-  const handleLoginSubmit = (e: { preventDefault: () => void; }) => {
+  const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoginLoading(true);
     setTimeout(() => {
@@ -245,7 +264,6 @@ export default function Dashboard() {
 
   // ==================== RENDER TAMPILAN ====================
   if (!isLoggedIn) {
-    // ... Login form yang sama persis ...
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-violet-50 to-purple-100 p-4 font-sans text-slate-800">
         <div className="relative max-w-md w-full bg-white rounded-3xl shadow-[0_10px_50px_rgba(124,58,237,0.08)] overflow-hidden border border-slate-100">
@@ -253,7 +271,7 @@ export default function Dashboard() {
             <div className="mx-auto w-16 h-16 bg-violet-50 text-violet-600 rounded-2xl flex items-center justify-center mb-4 shadow-sm">
               <Briefcase size={32} strokeWidth={1.5} />
             </div>
-            <h2 className="text-3xl font-extrabold text-slate-900 mb-1">Admin Panel</h2>
+            <h2 className="text-3xl font-extrabold text-slate-900 mb-1">N9nPort Admin</h2>
             <p className="text-slate-500 text-sm">Masuk untuk mengelola portofolio Anda</p>
           </div>
           <div className="px-8 pb-10">
@@ -284,8 +302,8 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex font-sans text-slate-800">
-      
+    <div className="min-h-screen bg-[#f8fafc] flex flex-col font-sans text-slate-800">
+
       {/* TOAST NOTIFIKASI */}
       {toast.show && (
         <div className={`fixed bottom-5 right-5 z-50 flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-xl transition-all duration-300 text-white ${toast.type === 'error' ? 'bg-rose-500' : 'bg-slate-900'}`}>
@@ -302,7 +320,7 @@ export default function Dashboard() {
             <div className="flex flex-col items-center text-center">
               <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center mb-4"><AlertCircle className="w-6 h-6" /></div>
               <h3 className="text-lg font-bold text-slate-900">Konfirmasi Keluar</h3>
-              <p className="text-sm text-slate-500 mt-2">Apakah Anda yakin ingin mengakhiri sesi dan keluar dari Admin Panel?</p>
+              <p className="text-sm text-slate-500 mt-2">Apakah Anda yakin ingin mengakhiri sesi dan keluar dari N9nPort Admin?</p>
             </div>
             <div className="grid grid-cols-2 gap-3 mt-6">
               <button onClick={() => setShowLogoutModal(false)} className="py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm">Batal</button>
@@ -332,62 +350,112 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* MOBILE HEADER BAR */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#0d0e12] flex items-center justify-between px-4 text-white z-40 shadow-sm">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center shadow-md">
-            <Briefcase size={18} className="text-white" />
-          </div>
-          <span className="font-bold tracking-wide text-lg">Admin<span className="text-violet-400">Panel</span></span>
-        </div>
-        <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-1 rounded-lg hover:bg-slate-800">
-          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
-      </div>
-
-      {/* SIDEBAR */}
-      <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-[#0d0e12] text-slate-300 flex flex-col justify-between transition-transform duration-300 lg:translate-x-0 lg:static lg:h-screen ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div>
-          <div className="p-6 flex items-center gap-3 border-b border-slate-800/60">
-            <div className="w-9 h-9 bg-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-violet-900/30">
-              <Briefcase size={20} className="text-white" />
+      {/* ==================== SOFT PURPLE NAVBAR ==================== */}
+      <nav className="sticky top-0 z-40 w-full bg-white/80 backdrop-blur-md border-b border-purple-100 shadow-sm shadow-purple-100/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Left: Logo */}
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 bg-gradient-to-br from-purple-500 to-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-200/50">
+                <Briefcase size={18} className="text-white" />
+              </div>
+              <span className="font-extrabold tracking-wider text-xl text-gray-900">
+                N9nPort<span className="text-purple-500">Admin</span>
+              </span>
             </div>
-            <span className="font-extrabold tracking-wider text-xl text-white">Admin<span className="text-violet-400">Panel</span></span>
+
+            {/* Center: Navigation Menu (Desktop) */}
+            <div className="hidden md:flex items-center gap-1 ">
+              <button
+                onClick={() => handleMenuChange('skills')}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                  activeMenu === 'skills' 
+                    ? 'bg-purple-50 text-purple-600 border border-purple-200' 
+                    : 'text-gray-500 hover:text-purple-600 hover:bg-purple-50/50'
+                }`}
+              >
+                <Layers size={18} />
+                <span>Keahlian</span>
+              </button>
+              <button
+                onClick={() => handleMenuChange('portfolio')}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                  activeMenu === 'portfolio' 
+                    ? 'bg-purple-50 text-purple-600 border border-purple-200' 
+                    : 'text-gray-500 hover:text-purple-600 hover:bg-purple-50/50'
+                }`}
+              >
+                <Briefcase size={18} />
+                <span>Karya Saya</span>
+              </button>
+            </div>
+
+            {/* Right: Actions */}
+            <div className="flex items-center gap-3">
+              {/* Logout */}
+              <button 
+                onClick={() => setShowLogoutModal(true)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-rose-500 hover:bg-rose-50 transition-all duration-200 border border-transparent hover:border-rose-200"
+              >
+                <LogOut size={18} />
+                <span className="hidden sm:inline">Logout</span>
+              </button>
+
+              {/* Mobile Menu Toggle */}
+              <button 
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="md:hidden p-2 rounded-xl text-gray-500 hover:text-purple-600 hover:bg-purple-50 transition-all"
+              >
+                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+            </div>
           </div>
-
-          <nav className="p-4 space-y-1.5 mt-4">
-            <button
-              onClick={() => handleMenuChange('skills')}
-              className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all ${activeMenu === 'skills' ? 'bg-violet-600 text-white shadow-lg shadow-violet-900/30' : 'hover:bg-slate-800/40 text-slate-400 hover:text-white'}`}
-            >
-              <Layers size={18} className={activeMenu === 'skills' ? 'text-white' : 'text-slate-400'} />
-              <span>Keahlian</span>
-            </button>
-
-            <button
-              onClick={() => handleMenuChange('portfolio')}
-              className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all ${activeMenu === 'portfolio' ? 'bg-violet-600 text-white shadow-lg shadow-violet-900/30' : 'hover:bg-slate-800/40 text-slate-400 hover:text-white'}`}
-            >
-              <Briefcase size={18} className={activeMenu === 'portfolio' ? 'text-white' : 'text-slate-400'} />
-              <span>Karya Saya</span>
-            </button>
-          </nav>
         </div>
 
-        <div className="p-4 border-t border-slate-800/60">
-          <button onClick={() => setShowLogoutModal(true)} className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-all">
-            <LogOut size={18} /><span>Logout</span>
-          </button>
-        </div>
-      </aside>
-
-      {/* OVERLAY */}
-      {isMobileMenuOpen && <div onClick={() => setIsMobileMenuOpen(false)} className="fixed inset-0 bg-slate-900/40 z-30 lg:hidden" />}
+        {/* Mobile Menu Dropdown */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden border-t border-purple-100 bg-white/95 backdrop-blur-md">
+            <div className="px-4 py-3 space-y-1">
+              <button
+                onClick={() => handleMenuChange('skills')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
+                  activeMenu === 'skills' 
+                    ? 'bg-purple-50 text-purple-600' 
+                    : 'text-gray-500 hover:text-purple-600 hover:bg-purple-50/50'
+                }`}
+              >
+                <Layers size={18} />
+                <span>Keahlian</span>
+              </button>
+              <button
+                onClick={() => handleMenuChange('portfolio')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
+                  activeMenu === 'portfolio' 
+                    ? 'bg-purple-50 text-purple-600' 
+                    : 'text-gray-500 hover:text-purple-600 hover:bg-purple-50/50'
+                }`}
+              >
+                <Briefcase size={18} />
+                <span>Karya Saya</span>
+              </button>
+              <div className="border-t border-gray-100 pt-2 mt-2">
+                <button 
+                  onClick={() => navigate({ to: '/' })}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-500 hover:text-purple-600 hover:bg-purple-50/50 transition-all"
+                >
+                  <Home size={18} />
+                  <span>Kembali ke Portfolio</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </nav>
 
       {/* MAIN CONTENT AREA */}
-      <main className="flex-1 min-w-0 overflow-y-auto lg:h-screen pt-20 lg:pt-0 p-4 sm:p-8 lg:p-12">
+      <main className="flex-1 p-4 sm:p-8 lg:p-12">
         <div className="max-w-4xl mx-auto space-y-8">
-          
+
           {/* ================================================================= */}
           {/* ==================== TAMPILAN MENU KEAHLIAN ===================== */}
           {/* ================================================================= */}
@@ -398,18 +466,13 @@ export default function Dashboard() {
                   <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Keahlian</h1>
                   <p className="text-slate-500 text-sm mt-1.5">Kelola daftar skill dan keahlian yang Anda kuasai.</p>
                 </div>
-                {isEditingSkill && (
-                  <button onClick={cancelEditSkillMode} className="self-start sm:self-center flex items-center gap-1.5 px-4 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-xl text-xs font-bold transition-all border border-amber-100">
-                    <XCircle size={14} /><span>Batal Edit</span>
-                  </button>
-                )}
               </div>
 
               {/* FORM KEAHLIAN */}
               <div className={`bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.02)] border overflow-hidden transition-colors duration-300 ${isEditingSkill ? 'border-amber-200 bg-amber-50/10' : 'border-slate-100'}`}>
                 <div className="px-6 sm:px-8 py-5 border-b border-slate-50 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    {isEditingSkill ? <Pencil className="w-5 h-5 text-amber-500" /> : <Plus className="w-5 h-5 text-violet-600" />}
+                    {isEditingSkill ? <Pencil className="w-5 h-5 text-amber-500" /> : <Plus className="w-5 h-5 text-purple-600" />}
                     <h2 className="font-extrabold text-base sm:text-lg text-slate-800">{isEditingSkill ? 'Edit Keahlian' : 'Tambah Keahlian Baru'}</h2>
                   </div>
                 </div>
@@ -419,30 +482,47 @@ export default function Dashboard() {
                     <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Judul Keahlian <span className="text-rose-500">*</span></label>
                     <div className="relative rounded-xl">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"><Layers className="w-5 h-5" /></div>
-                      <input type="text" required value={formSkillJudul} onChange={(e) => setFormSkillJudul(e.target.value)} className="block w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500" placeholder="Contoh: HTML & CSS" />
+                      <input type="text" required value={formSkillJudul} onChange={(e) => setFormSkillJudul(e.target.value)} className="block w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" placeholder="Contoh: HTML & CSS" />
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Deskripsi <span className="text-rose-500">*</span></label>
-                    <textarea rows={3} required value={formSkillDeskripsi} onChange={(e) => setFormSkillDeskripsi(e.target.value)} className="block w-full px-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500" placeholder="Membangun tampilan website yang terstruktur..." />
+                    <textarea rows={3} required value={formSkillDeskripsi} onChange={(e) => setFormSkillDeskripsi(e.target.value)} className="block w-full px-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" placeholder="Membangun tampilan website yang terstruktur..." />
                   </div>
 
                   <div>
                     <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Tag / Tools (Pisahkan dgn Koma) <span className="text-rose-500">*</span></label>
                     <div className="relative rounded-xl">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"><TagIcon className="w-5 h-5" /></div>
-                      <input type="text" required value={formSkillTag} onChange={(e) => setFormSkillTag(e.target.value)} className="block w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500" placeholder="HTML5, CSS3, Bootstrap" />
+                      <input type="text" required value={formSkillTag} onChange={(e) => setFormSkillTag(e.target.value)} className="block w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" placeholder="HTML5, CSS3, Bootstrap" />
                     </div>
                   </div>
 
-                  <button type="submit" className={`w-full py-3.5 px-6 rounded-xl text-white font-bold text-sm shadow-md transition-all ${isEditingSkill ? 'bg-amber-500 hover:bg-amber-600' : 'bg-violet-600 hover:bg-violet-700'}`}>
-                    {isEditingSkill ? 'Simpan Perubahan' : 'Simpan Keahlian'}
-                  </button>
+                  {/* Button Group: Cancel Left, Save Right */}
+                  <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                    {isEditingSkill && (
+                      <button 
+                        type="button" 
+                        onClick={cancelEditSkillMode} 
+                        className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-all"
+                      >
+                        <XCircle size={18} />
+                        Batal Edit
+                      </button>
+                    )}
+                    <button 
+                      type="submit" 
+                      className={`flex-1 flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl text-white font-bold text-sm shadow-md transition-all ${isEditingSkill ? 'bg-amber-500 hover:bg-amber-600' : 'bg-purple-600 hover:bg-purple-700'}`}
+                    >
+                      <CheckCircle size={18} />
+                      {isEditingSkill ? 'Simpan Perubahan' : 'Simpan Keahlian'}
+                    </button>
+                  </div>
                 </form>
               </div>
 
-              {/* DAFTAR KEAHLIAN (CARD DESIGN SEPERTI GAMBAR) */}
+              {/* DAFTAR KEAHLIAN (CARD DESIGN) */}
               <div className="space-y-4 pt-4">
                 <h3 className="font-extrabold text-slate-900 text-lg tracking-tight">Daftar Keahlian Saat Ini ({skills.length})</h3>
                 {skills.length === 0 ? (
@@ -450,28 +530,28 @@ export default function Dashboard() {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {skills.map((skill) => (
-                      <div key={skill.id} className="bg-[#fcfaff] border border-violet-100 rounded-[2rem] p-7 relative group shadow-sm hover:shadow-md transition-all">
-                        {/* Action Buttons Timbul Saat Hover (Desktop) atau Selalu Timbul (Mobile) */}
+                      <div key={skill.id} className="bg-[#fcfaff] border border-purple-100 rounded-[2rem] p-7 relative group shadow-sm hover:shadow-md transition-all">
+                        {/* Action Buttons */}
                         <div className="absolute top-6 right-6 flex gap-2 lg:opacity-0 group-hover:opacity-100 transition-opacity">
                           <button onClick={() => startEditSkillMode(skill)} className="p-2 bg-white rounded-xl shadow-sm border border-slate-100 text-amber-500 hover:bg-amber-50"><Pencil size={16} /></button>
                           <button onClick={() => triggerDeleteConfirm('skill', skill)} className="p-2 bg-white rounded-xl shadow-sm border border-slate-100 text-rose-500 hover:bg-rose-50"><Trash2 size={16} /></button>
                         </div>
-                        
-                        {/* Ikon Persegi Kiri Atas */}
+
+                        {/* Icon */}
                         <div className="w-[60px] h-[60px] bg-white rounded-2xl shadow-[0_2px_15px_rgba(0,0,0,0.03)] flex items-center justify-center mb-6 border border-slate-50">
-                          <LayoutGrid className="w-8 h-8 text-violet-600" />
+                          <LayoutGrid className="w-8 h-8 text-purple-600" />
                         </div>
-                        
-                        {/* Teks Deskripsi */}
+
+                        {/* Content */}
                         <h4 className="text-xl font-extrabold text-slate-800 mb-3">{skill.judul}</h4>
                         <p className="text-slate-500 text-[15px] leading-relaxed mb-6 line-clamp-3">
                           {skill.deskripsi}
                         </p>
-                        
-                        {/* Tags / Pills */}
+
+                        {/* Tags */}
                         <div className="flex flex-wrap gap-2.5">
                           {skill.tag.split(',').map((t, idx) => (
-                            <span key={idx} className="bg-white px-3.5 py-1.5 rounded-full text-violet-700 text-xs font-bold shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-50">
+                            <span key={idx} className="bg-white px-3.5 py-1.5 rounded-full text-purple-700 text-xs font-bold shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-50">
                               {t.trim()}
                             </span>
                           ))}
@@ -495,18 +575,13 @@ export default function Dashboard() {
                   <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Karya Saya</h1>
                   <p className="text-slate-500 text-sm mt-1.5">Tambah, edit, atau hapus item portofolio yang tampil di halaman depan.</p>
                 </div>
-                {isEditingPortfolio && (
-                  <button onClick={cancelEditPortfolioMode} className="self-start sm:self-center flex items-center gap-1.5 px-4 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-xl text-xs font-bold transition-all border border-amber-100">
-                    <XCircle size={14} /><span>Batal Edit</span>
-                  </button>
-                )}
               </div>
 
               {/* FORM KARYA SAYA */}
               <div className={`bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.02)] border overflow-hidden transition-colors duration-300 ${isEditingPortfolio ? 'border-amber-200 bg-amber-50/10' : 'border-slate-100'}`}>
                 <div className="px-6 sm:px-8 py-5 border-b border-slate-50 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    {isEditingPortfolio ? <Pencil className="w-5 h-5 text-amber-500" /> : <Plus className="w-5 h-5 text-violet-600" />}
+                    {isEditingPortfolio ? <Pencil className="w-5 h-5 text-amber-500" /> : <Plus className="w-5 h-5 text-purple-600" />}
                     <h2 className="font-extrabold text-base sm:text-lg text-slate-800">{isEditingPortfolio ? 'Edit Karya' : 'Tambah Karya Baru'}</h2>
                   </div>
                 </div>
@@ -516,13 +591,13 @@ export default function Dashboard() {
                     <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Judul Proyek <span className="text-rose-500">*</span></label>
                     <div className="relative rounded-xl">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"><FileText className="w-5 h-5" /></div>
-                      <input type="text" required value={formJudul} onChange={(e) => setFormJudul(e.target.value)} className="block w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500" placeholder="Contoh: Aplikasi Kasir" />
+                      <input type="text" required value={formJudul} onChange={(e) => setFormJudul(e.target.value)} className="block w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" placeholder="Contoh: Aplikasi Kasir" />
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Deskripsi Singkat <span className="text-rose-500">*</span></label>
-                    <textarea rows={3} required value={formDeskripsi} onChange={(e) => setFormDeskripsi(e.target.value)} className="block w-full px-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500" placeholder="Deskripsikan fitur..." />
+                    <textarea rows={3} required value={formDeskripsi} onChange={(e) => setFormDeskripsi(e.target.value)} className="block w-full px-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" placeholder="Deskripsikan fitur..." />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -534,14 +609,14 @@ export default function Dashboard() {
                           <button
                             type="button"
                             onClick={() => { setImageInputType('url'); setFormGambar(''); }}
-                            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-md transition-all ${imageInputType === 'url' ? 'bg-white text-violet-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-md transition-all ${imageInputType === 'url' ? 'bg-white text-purple-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                           >
                             <LinkIcon size={12} /> Link
                           </button>
                           <button
                             type="button"
                             onClick={() => { setImageInputType('file'); setFormGambar(''); }}
-                            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-md transition-all ${imageInputType === 'file' ? 'bg-white text-violet-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-md transition-all ${imageInputType === 'file' ? 'bg-white text-purple-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                           >
                             <UploadCloud size={12} /> Upload
                           </button>
@@ -551,13 +626,13 @@ export default function Dashboard() {
                       {imageInputType === 'url' ? (
                         <div className="relative rounded-xl">
                           <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"><ImageIcon className="w-5 h-5" /></div>
-                          <input type="url" value={formGambar} onChange={(e) => setFormGambar(e.target.value)} className="block w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500" placeholder="https://..." />
+                          <input type="url" value={formGambar} onChange={(e) => setFormGambar(e.target.value)} className="block w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" placeholder="https://..." />
                         </div>
                       ) : (
                         <div className="relative flex flex-col items-center justify-center p-3.5 border-2 border-dashed border-slate-300 rounded-xl bg-slate-50/50 hover:bg-slate-100 transition-colors cursor-pointer group h-[46px] mt-[2px]">
                           <input type="file" accept="image/*" onChange={handleImageUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
                           <div className="flex items-center gap-2">
-                            <UploadCloud className="w-5 h-5 text-slate-400 group-hover:text-violet-500 transition-colors" />
+                            <UploadCloud className="w-5 h-5 text-slate-400 group-hover:text-purple-500 transition-colors" />
                             <span className="text-xs font-semibold text-slate-500">
                               {formGambar ? <span className="text-emerald-600">✓ Gambar berhasil dimuat</span> : 'Pilih dari folder...'}
                             </span>
@@ -570,7 +645,7 @@ export default function Dashboard() {
                       <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Teknologi (Pisahkan dgn Koma) <span className="text-rose-500">*</span></label>
                       <div className="relative rounded-xl">
                         <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"><TagIcon className="w-5 h-5" /></div>
-                        <input type="text" required value={formTag} onChange={(e) => setFormTag(e.target.value)} className="block w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500" placeholder="React, Node.js" />
+                        <input type="text" required value={formTag} onChange={(e) => setFormTag(e.target.value)} className="block w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" placeholder="React, Node.js" />
                       </div>
                     </div>
                   </div>
@@ -579,17 +654,34 @@ export default function Dashboard() {
                     <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Link GitHub</label>
                     <div className="relative rounded-xl">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"><FolderGit className="w-5 h-5" /></div>
-                      <input type="url" value={formGithub} onChange={(e) => setFormGithub(e.target.value)} className="block w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500" placeholder="https://github.com/..." />
+                      <input type="url" value={formGithub} onChange={(e) => setFormGithub(e.target.value)} className="block w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" placeholder="https://github.com/..." />
                     </div>
                   </div>
 
-                  <button type="submit" className={`w-full py-3.5 px-6 rounded-xl text-white font-bold text-sm shadow-md transition-all ${isEditingPortfolio ? 'bg-amber-500 hover:bg-amber-600' : 'bg-violet-600 hover:bg-violet-700'}`}>
-                    {isEditingPortfolio ? 'Simpan Perubahan' : 'Simpan Karya'}
-                  </button>
+                  {/* Button Group: Cancel Left, Save Right */}
+                  <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                    {isEditingPortfolio && (
+                      <button 
+                        type="button" 
+                        onClick={cancelEditPortfolioMode} 
+                        className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-all"
+                      >
+                        <XCircle size={18} />
+                        Batal Edit
+                      </button>
+                    )}
+                    <button 
+                      type="submit" 
+                      className={`flex-1 flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl text-white font-bold text-sm shadow-md transition-all ${isEditingPortfolio ? 'bg-amber-500 hover:bg-amber-600' : 'bg-purple-600 hover:bg-purple-700'}`}
+                    >
+                      <CheckCircle size={18} />
+                      {isEditingPortfolio ? 'Simpan Perubahan' : 'Simpan Karya'}
+                    </button>
+                  </div>
                 </form>
               </div>
 
-              {/* LIST KARYA SAYA (DESAIN YANG LAMA) */}
+              {/* LIST KARYA SAYA */}
               <div className="space-y-4 pt-4">
                 <h3 className="font-extrabold text-slate-900 text-lg tracking-tight">Daftar Karya Saat Ini ({portfolios.length})</h3>
                 {portfolios.length === 0 ? (
@@ -604,7 +696,7 @@ export default function Dashboard() {
                             <h4 className="font-extrabold text-slate-900 text-base sm:text-lg flex items-center gap-2"><span>{portfolio.judul}</span></h4>
                             <p className="text-slate-500 text-xs sm:text-sm line-clamp-2 pr-4">{portfolio.deskripsi}</p>
                             <div className="flex flex-wrap items-center gap-2 pt-1">
-                              {portfolio.tag.split(',').map((tech, idx) => <span key={idx} className="px-2.5 py-0.5 bg-violet-50 text-violet-600 rounded-md text-xs font-bold">{tech.trim()}</span>)}
+                              {portfolio.tag.split(',').map((tech, idx) => <span key={idx} className="px-2.5 py-0.5 bg-purple-50 text-purple-600 rounded-md text-xs font-bold">{tech.trim()}</span>)}
                               {portfolio.github && <a href={portfolio.github} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-slate-50 text-slate-600 rounded-md text-xs font-semibold border"><FaGithub size={12} /><span>GitHub</span></a>}
                             </div>
                           </div>
