@@ -1,254 +1,305 @@
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
-import { useState, type SetStateAction } from 'react';
-import { FaGithub } from "react-icons/fa";
-import { 
-  Briefcase, 
-  LogOut, 
-  Plus, 
-  Trash2, 
-  Image as ImageIcon, 
-  Tag as TagIcon, 
-  FileText, 
-  FolderGit,
-  Menu,
-  X,
-  CheckCircle,
-  Mail,
-  Lock,
-  Eye,
-  EyeOff,
-  Pencil,
+import { useEffect, useState, type SetStateAction } from 'react'
+import { FaGithub } from 'react-icons/fa'
+import {
   AlertCircle,
-  XCircle,
+  Briefcase,
+  CheckCircle,
+  FileText,
+  FolderGit,
+  Home,
+  Image as ImageIcon,
   LayoutGrid,
   Layers,
-  UploadCloud,
   Link as LinkIcon,
-  Home
-} from 'lucide-react';
+  Lock,
+  LogOut,
+  Mail,
+  Menu,
+  Pencil,
+  Plus,
+  Tag as TagIcon,
+  Trash2,
+  UploadCloud,
+  Eye,
+  EyeOff,
+  X,
+  XCircle,
+} from 'lucide-react'
+
+import {
+  createPortfolio,
+  deletePortfolio,
+  getPortfolios,
+  createSkill,
+  deleteSkill,
+  getSkills,
+  updatePortfolio,
+  updateSkill,
+} from '../lib/api'
 
 export const Route = createFileRoute('/dashboard')({
-    beforeLoad: () => {
-      const token = localStorage.getItem("token");
-      const role = localStorage.getItem("role");
+  beforeLoad: () => {
+    const token = localStorage.getItem('token')
+    const role = localStorage.getItem('role')
 
-      // Belum login
-      if (!token) {
-        throw redirect({
-          to: "/login",
-        });
-      }
+    if (!token) {
+      throw redirect({ to: '/login' })
+    }
 
-      // Bukan admin
-      if (role !== "admin") {
-        throw redirect({
-          to: "/login",
-        });
-      }
-    },
-    component: Dashboard,
-});
+    if (!role || role !== 'admin') {
+      throw redirect({ to: '/login' })
+    }
+  },
+  component: Dashboard,
+})
+
+type Skill = {
+  id: string
+  judul: string
+  deskripsi: string
+  tag: string
+  urutan?: number
+}
+
+type Portfolio = {
+  id: string
+  judul: string
+  deskripsi: string
+  tag: string
+  gambar?: string | null
+  github?: string | null
+  urutan?: number
+}
 
 export default function Dashboard() {
+
+
   const navigate = useNavigate()
-  // State untuk navigasi/login
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
-  const [activeMenu, setActiveMenu] = useState('skills'); // Default ke menu Keahlian
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // State Form Login
-  const [loginEmail, setLoginEmail] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoginLoading, setIsLoginLoading] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(true)
+  const [activeMenu, setActiveMenu] = useState('skills')
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
-  // State untuk Notifikasi/Toast
-  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  // Login state (untuk fallback UI)
+  const [loginEmail, setLoginEmail] = useState('')
+  const [loginPassword, setLoginPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [isLoginLoading, setIsLoginLoading] = useState(false)
 
-  // State Modals (Konfirmasi)
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<{ type: string; data: { id: number; judul: string; deskripsi: string; tag: string; gambar?: string; github?: string } | null }>({ type: '', data: null });
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' as 'success' | 'error' })
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ show: true, message, type })
+    setTimeout(() => setToast({ show: false, message: '', type }), 3000)
+  }
 
-  // ==================== STATE KARYA SAYA (PORTOFOLIO) ====================
-  const [isEditingPortfolio, setIsEditingPortfolio] = useState(false);
-  const [editPortfolioId, setEditPortfolioId] = useState<number | null>(null);
-  const [portfolios, setPortfolios] = useState([
-    {
-      id: 1,
-      judul: 'E-Commerce Ungu',
-      deskripsi: 'Platform toko online modern dengan fitur keranjang belanja real-time dan integrasi sistem pembayaran yang andal.',
-      tag: 'React, Tailwind, Node.js',
-      gambar: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
-      github: 'https://github.com/username/ecommerce-ungu'
-    }
-  ]);
-  const [formGambar, setFormGambar] = useState('');
-  const [imageInputType, setImageInputType] = useState('url'); // State untuk menentukan tipe input gambar: 'url' atau 'file'
-  const [formJudul, setFormJudul] = useState('');
-  const [formTag, setFormTag] = useState('');
-  const [formDeskripsi, setFormDeskripsi] = useState('');
-  const [formGithub, setFormGithub] = useState('');
+  const [showLogoutModal, setShowLogoutModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [itemToDelete, setItemToDelete] = useState<{
+    type: string
+    data: (Portfolio & { judul: string }) | (Skill & { judul: string }) | null
+  }>({ type: '', data: null })
 
-  // ==================== STATE KEAHLIAN (SKILLS) ====================
-  const [isEditingSkill, setIsEditingSkill] = useState(false);
-  const [editSkillId, setEditSkillId] = useState<number | null>(null);
-  const [skills, setSkills] = useState([
-    {
-      id: 1,
-      judul: 'HTML & CSS',
-      deskripsi: 'Membangun tampilan website yang terstruktur, responsif, dan menarik menggunakan HTML serta CSS.',
-      tag: 'HTML5, CSS3, Bootstrap'
-    }
-  ]);
-  const [formSkillJudul, setFormSkillJudul] = useState('');
-  const [formSkillDeskripsi, setFormSkillDeskripsi] = useState('');
-  const [formSkillTag, setFormSkillTag] = useState('');
+  // Portofolio
+  const [isEditingPortfolio, setIsEditingPortfolio] = useState(false)
+  const [editPortfolioId, setEditPortfolioId] = useState<string | null>(null)
+  const [portfolios, setPortfolios] = useState<Portfolio[]>([])
 
+  const [formGambar, setFormGambar] = useState('')
+  const [imageInputType, setImageInputType] = useState<'url' | 'file'>('url')
+  const [formJudul, setFormJudul] = useState('')
+  const [formTag, setFormTag] = useState('')
+  const [formDeskripsi, setFormDeskripsi] = useState('')
+  const [formGithub, setFormGithub] = useState('')
 
-  // ==================== GLOBAL HANDLERS ====================
-  const showToast = (message: string, type = 'success') => {
-    setToast({ show: true, message, type });
-    setTimeout(() => setToast({ show: false, message: '', type }), 3000);
-  };
+  // Skills
+  const [isEditingSkill, setIsEditingSkill] = useState(false)
+  const [editSkillId, setEditSkillId] = useState<string | null>(null)
+  const [skills, setSkills] = useState<Skill[]>([])
+
+  const [formSkillJudul, setFormSkillJudul] = useState('')
+  const [formSkillDeskripsi, setFormSkillDeskripsi] = useState('')
+  const [formSkillTag, setFormSkillTag] = useState('')
+
+  useEffect(() => {
+    fetchSkills()
+    fetchPortfolios()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleMenuChange = (menu: SetStateAction<string>) => {
-    setActiveMenu(menu);
-    setIsMobileMenuOpen(false);
-    cancelEditPortfolioMode();
-    cancelEditSkillMode();
-  };
+    setActiveMenu(menu)
+    setIsMobileMenuOpen(false)
+    cancelEditPortfolioMode()
+    cancelEditSkillMode()
+  }
 
-
-  // ==================== HANDLERS PORTOFOLIO ====================
-  const handleSubmitPortfolio = (e: React.FormEvent) => {
-    e.preventDefault();
-    const finalGambar = formGambar.trim() || 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=500&auto=format&fit=crop&q=60';
-
-    if (isEditingPortfolio) {
-      setPortfolios(portfolios.map(item => item.id === editPortfolioId ? {
-        ...item, judul: formJudul, deskripsi: formDeskripsi, tag: formTag, gambar: finalGambar, github: formGithub || 'https://github.com'
-      } : item));
-      showToast('Karya berhasil diperbarui!', 'success');
-      cancelEditPortfolioMode();
-    } else {
-      const newPortfolio = {
-        id: Date.now(), judul: formJudul, deskripsi: formDeskripsi, tag: formTag, gambar: finalGambar, github: formGithub || 'https://github.com'
-      };
-      setPortfolios([newPortfolio, ...portfolios]);
-      showToast('Karya baru berhasil disimpan!', 'success');
-      resetFormPortfolio();
+  const fetchSkills = async () => {
+    try {
+      const res = await getSkills()
+      if (res?.success && Array.isArray(res.data)) setSkills(res.data)
+    } catch {
+      showToast('Gagal mengambil data keahlian', 'error')
     }
-  };
+  }
 
-  const startEditPortfolioMode = (portfolio: { id: number; judul: string; deskripsi: string; tag: string; gambar: string; github: string }) => {
-    setIsEditingPortfolio(true);
-    setEditPortfolioId(portfolio.id);
-    setFormJudul(portfolio.judul);
-    setFormDeskripsi(portfolio.deskripsi);
-    setFormTag(portfolio.tag);
-    setFormGambar(portfolio.gambar);
+  const fetchPortfolios = async () => {
+    try {
+      const res = await getPortfolios()
+      if (res?.success && Array.isArray(res.data)) setPortfolios(res.data)
+    } catch {
+      showToast('Gagal mengambil data karya', 'error')
+    }
+  }
 
-    // Deteksi jika gambar sebelumnya adalah hasil upload (base64) atau URL biasa
-    setImageInputType(portfolio.gambar && portfolio.gambar.startsWith('data:image') ? 'file' : 'url');
+  const handleSubmitPortfolio = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const finalGambar =
+      formGambar.trim() ||
+      'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=500&auto=format&fit=crop&q=60'
 
-    setFormGithub(portfolio.github === 'https://github.com' ? '' : portfolio.github);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    showToast('Mode edit aktif.');
-  };
+    const payload = {
+      judul: formJudul,
+      deskripsi: formDeskripsi,
+      tag: formTag,
+      gambar: finalGambar,
+      github: formGithub || 'https://github.com',
+      urutan: 0,
+    }
+
+    try {
+      if (isEditingPortfolio) {
+        await updatePortfolio(editPortfolioId as string, payload)
+        showToast('Karya berhasil diperbarui!', 'success')
+        cancelEditPortfolioMode()
+      } else {
+        await createPortfolio(payload)
+        showToast('Karya baru berhasil disimpan!', 'success')
+        resetFormPortfolio()
+      }
+      await fetchPortfolios()
+    } catch {
+      showToast('Gagal menyimpan karya', 'error')
+    }
+  }
+
+  const startEditPortfolioMode = (portfolio: Portfolio & { judul: string }) => {
+    setIsEditingPortfolio(true)
+    setEditPortfolioId(portfolio.id)
+    setFormJudul(portfolio.judul)
+    setFormDeskripsi(portfolio.deskripsi)
+    setFormTag(portfolio.tag)
+    setFormGambar(portfolio.gambar ?? '')
+    setImageInputType(portfolio.gambar && portfolio.gambar.startsWith('data:image') ? 'file' : 'url')
+    setFormGithub(portfolio.github && portfolio.github !== 'https://github.com' ? portfolio.github : '')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    showToast('Mode edit aktif.', 'success')
+  }
 
   const cancelEditPortfolioMode = () => {
-    setIsEditingPortfolio(false);
-    setEditPortfolioId(null);
-    resetFormPortfolio();
-  };
+    setIsEditingPortfolio(false)
+    setEditPortfolioId(null)
+    resetFormPortfolio()
+  }
 
   const resetFormPortfolio = () => {
-    setFormGambar(''); setFormJudul(''); setFormTag(''); setFormDeskripsi(''); setFormGithub('');
-    setImageInputType('url'); // Reset tipe input gambar ke URL
-  };
+    setFormGambar('')
+    setFormJudul('')
+    setFormTag('')
+    setFormDeskripsi('')
+    setFormGithub('')
+    setImageInputType('url')
+  }
 
-  // Handler untuk Upload Gambar dari Folder
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) { // Batas ukuran 2MB
-        showToast('Ukuran gambar maksimal 2MB', 'error');
-        return;
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 2 * 1024 * 1024) {
+      showToast('Ukuran gambar maksimal 2MB', 'error')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      if (reader.result) setFormGambar(reader.result as string)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const handleSubmitSkill = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const payload = {
+      judul: formSkillJudul,
+      deskripsi: formSkillDeskripsi,
+      tag: formSkillTag,
+      urutan: 0,
+    }
+
+    try {
+      if (isEditingSkill) {
+        await updateSkill(editSkillId as string, payload)
+        showToast('Keahlian berhasil diperbarui!', 'success')
+        cancelEditSkillMode()
+      } else {
+        await createSkill(payload)
+        showToast('Keahlian baru berhasil disimpan!', 'success')
+        resetFormSkill()
       }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (reader.result) {
-          setFormGambar(reader.result as string); // Simpan hasil konversi gambar (Base64) ke state
-        }
-      };
-      reader.readAsDataURL(file);
+      await fetchSkills()
+    } catch {
+      showToast('Gagal menyimpan keahlian', 'error')
     }
-  };
+  }
 
-
-  // ==================== HANDLERS KEAHLIAN ====================
-  const handleSubmitSkill = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (isEditingSkill) {
-      setSkills(skills.map(item => item.id === editSkillId ? {
-        ...item, judul: formSkillJudul, deskripsi: formSkillDeskripsi, tag: formSkillTag
-      } : item));
-      showToast('Keahlian berhasil diperbarui!', 'success');
-      cancelEditSkillMode();
-    } else {
-      const newSkill = {
-        id: Date.now(), judul: formSkillJudul, deskripsi: formSkillDeskripsi, tag: formSkillTag
-      };
-      setSkills([newSkill, ...skills]);
-      showToast('Keahlian baru berhasil disimpan!', 'success');
-      resetFormSkill();
-    }
-  };
-
-  const startEditSkillMode = (skill: { id: number; judul: string; deskripsi: string; tag: string }) => {
-    setIsEditingSkill(true);
-    setEditSkillId(skill.id);
-    setFormSkillJudul(skill.judul);
-    setFormSkillDeskripsi(skill.deskripsi);
-    setFormSkillTag(skill.tag);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    showToast('Mode edit keahlian aktif.');
-  };
+  const startEditSkillMode = (skill: Skill) => {
+    setIsEditingSkill(true)
+    setEditSkillId(skill.id)
+    setFormSkillJudul(skill.judul)
+    setFormSkillDeskripsi(skill.deskripsi)
+    setFormSkillTag(skill.tag)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    showToast('Mode edit keahlian aktif.', 'success')
+  }
 
   const cancelEditSkillMode = () => {
-    setIsEditingSkill(false);
-    setEditSkillId(null);
-    resetFormSkill();
-  };
+    setIsEditingSkill(false)
+    setEditSkillId(null)
+    resetFormSkill()
+  }
 
   const resetFormSkill = () => {
-    setFormSkillJudul(''); setFormSkillDeskripsi(''); setFormSkillTag('');
-  };
+    setFormSkillJudul('')
+    setFormSkillDeskripsi('')
+    setFormSkillTag('')
+  }
 
+  const triggerDeleteConfirm = (type: string, data: Portfolio | Skill) => {
+    setItemToDelete({ type, data: data as any })
+    setShowDeleteModal(true)
+  }
 
-  // ==================== DELETE MODAL HANDLERS ====================
-  const triggerDeleteConfirm = (type: string, data: { id: number; judul: string; deskripsi: string; tag: string; gambar?: string; github?: string }) => {
-    setItemToDelete({ type, data });
-    setShowDeleteModal(true);
-  };
+  const confirmDelete = async () => {
+    const data = itemToDelete.data
+    try {
+      if (!data) return
 
-  const confirmDelete = () => {
-    const data = itemToDelete.data;
-    if (data) {
       if (itemToDelete.type === 'portfolio') {
-        setPortfolios(portfolios.filter(item => item.id !== data.id));
-        if (isEditingPortfolio && editPortfolioId === data.id) cancelEditPortfolioMode();
+        await deletePortfolio(data.id as string)
+        if (isEditingPortfolio && editPortfolioId === data.id) cancelEditPortfolioMode()
+        await fetchPortfolios()
+        showToast(`"${(data as any).judul}" telah dihapus`, 'error')
       } else if (itemToDelete.type === 'skill') {
-        setSkills(skills.filter(item => item.id !== data.id));
-        if (isEditingSkill && editSkillId === data.id) cancelEditSkillMode();
+        await deleteSkill(data.id as string)
+        if (isEditingSkill && editSkillId === data.id) cancelEditSkillMode()
+        await fetchSkills()
+        showToast(`"${(data as any).judul}" telah dihapus`, 'error')
       }
-      showToast(`"${data.judul}" telah dihapus`, 'error');
+    } finally {
+      setShowDeleteModal(false)
+      setItemToDelete({ type: '', data: null })
     }
-    setShowDeleteModal(false);
-    setItemToDelete({ type: '', data: null });
-  };
+  }
+
 
 
   // ==================== LOGIN / LOGOUT ====================
@@ -265,33 +316,33 @@ export default function Dashboard() {
   // ==================== RENDER TAMPILAN ====================
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-violet-50 to-purple-100 p-4 font-sans text-slate-800">
-        <div className="relative max-w-md w-full bg-white rounded-3xl shadow-[0_10px_50px_rgba(124,58,237,0.08)] overflow-hidden border border-slate-100">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-indigo-950 to-purple-950 p-4 font-sans text-slate-200">
+        <div className="relative max-w-md w-full bg-white rounded-3xl shadow-[0_10px_50px_rgba(124,58,237,0.08)] overflow-hidden border border-slate-800/50">
           <div className="px-8 pt-12 pb-6 text-center">
-            <div className="mx-auto w-16 h-16 bg-violet-50 text-violet-600 rounded-2xl flex items-center justify-center mb-4 shadow-sm">
+            <div className="mx-auto w-16 h-16 bg-indigo-900/40 text-indigo-400 rounded-2xl flex items-center justify-center mb-4 shadow-sm">
               <Briefcase size={32} strokeWidth={1.5} />
             </div>
-            <h2 className="text-3xl font-extrabold text-slate-900 mb-1">N9nPort Admin</h2>
-            <p className="text-slate-500 text-sm">Masuk untuk mengelola portofolio Anda</p>
+            <h2 className="text-3xl font-extrabold text-slate-100 mb-1">N9nPort Admin</h2>
+            <p className="text-slate-400 text-sm">Masuk untuk mengelola portofolio Anda</p>
           </div>
           <div className="px-8 pb-10">
             <form onSubmit={handleLoginSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">Alamat Email</label>
+                <label className="block text-xs font-bold text-slate-600 mb-2 uppercase tracking-wider">Alamat Email</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none"><Mail className="h-5 w-5 text-slate-400" /></div>
-                  <input type="email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} className="w-full pl-10 pr-4 py-3.5 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500" placeholder="admin@portofolio.com" required />
+                  <input type="email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} className="w-full pl-10 pr-4 py-3.5 bg-slate-800/60 border border-slate-700/50 rounded-xl text-slate-100 focus:ring-2 focus:ring-indigo-700/30 focus:border-indigo-500" placeholder="admin@portofolio.com" required />
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">Kata Sandi</label>
+                <label className="block text-xs font-bold text-slate-600 mb-2 uppercase tracking-wider">Kata Sandi</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none"><Lock className="h-5 w-5 text-slate-400" /></div>
-                  <input type={showPassword ? "text" : "password"} value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} className="w-full pl-10 pr-12 py-3.5 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500" placeholder="••••••••" required />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600">{showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}</button>
+                  <input type={showPassword ? "text" : "password"} value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} className="w-full pl-10 pr-12 py-3.5 bg-slate-800/60 border border-slate-700/50 rounded-xl text-slate-100 focus:ring-2 focus:ring-indigo-700/30 focus:border-indigo-500" placeholder="••••••••" required />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-400">{showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}</button>
                 </div>
               </div>
-              <button type="submit" disabled={isLoginLoading} className="w-full py-3.5 px-4 mt-6 rounded-xl shadow-lg shadow-violet-100 text-sm font-semibold text-white bg-violet-600 hover:bg-violet-700 transition-all flex justify-center items-center">
+              <button type="submit" disabled={isLoginLoading} className="w-full py-3.5 px-4 mt-6 rounded-xl shadow-lg shadow-indigo-900/30 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 transition-all flex justify-center items-center">
                 {isLoginLoading ? 'Memproses...' : 'Masuk ke Dashboard'}
               </button>
             </form>
@@ -302,11 +353,11 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex flex-col font-sans text-slate-800">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-purple-950 flex flex-col font-sans text-slate-100">
 
       {/* TOAST NOTIFIKASI */}
       {toast.show && (
-        <div className={`fixed bottom-5 right-5 z-50 flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-xl transition-all duration-300 text-white ${toast.type === 'error' ? 'bg-rose-500' : 'bg-slate-900'}`}>
+        <div className={`fixed bottom-5 right-5 z-50 flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-xl transition-all duration-300 text-white ${toast.type === 'error' ? 'bg-rose-900/300' : 'bg-slate-800'}`}>
           <CheckCircle className={`w-5 h-5 flex-shrink-0 ${toast.type === 'error' ? 'text-white' : 'text-emerald-400'}`} />
           <span className="font-semibold text-sm">{toast.message}</span>
         </div>
@@ -315,16 +366,16 @@ export default function Dashboard() {
       {/* MODAL KONFIRMASI LOGOUT */}
       {showLogoutModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowLogoutModal(false)}></div>
-          <div className="relative bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
+          <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm" onClick={() => setShowLogoutModal(false)}></div>
+          <div className="relative bg-slate-900/80 rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-800/50">
             <div className="flex flex-col items-center text-center">
-              <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center mb-4"><AlertCircle className="w-6 h-6" /></div>
-              <h3 className="text-lg font-bold text-slate-900">Konfirmasi Keluar</h3>
-              <p className="text-sm text-slate-500 mt-2">Apakah Anda yakin ingin mengakhiri sesi dan keluar dari N9nPort Admin?</p>
+              <div className="w-12 h-12 rounded-full bg-amber-900/30 text-amber-400 flex items-center justify-center mb-4"><AlertCircle className="w-6 h-6" /></div>
+              <h3 className="text-lg font-bold text-slate-100">Konfirmasi Keluar</h3>
+              <p className="text-sm text-slate-400 mt-2">Apakah Anda yakin ingin mengakhiri sesi dan keluar dari N9nPort Admin?</p>
             </div>
             <div className="grid grid-cols-2 gap-3 mt-6">
-              <button onClick={() => setShowLogoutModal(false)} className="py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm">Batal</button>
-              <button onClick={() => navigate({ to: '/landing_page' })} className="py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-xl text-sm shadow-md shadow-rose-100">Keluar</button>
+              <button onClick={() => setShowLogoutModal(false)} className="py-2.5 bg-slate-800/50 hover:bg-slate-700 text-slate-600 font-semibold rounded-xl text-sm">Batal</button>
+              <button onClick={() => navigate({ to: '/landing_page' })} className="py-2.5 bg-rose-700 hover:bg-rose-600 text-white font-semibold rounded-xl text-sm shadow-md shadow-rose-900/30">Keluar</button>
             </div>
           </div>
         </div>
@@ -333,34 +384,34 @@ export default function Dashboard() {
       {/* MODAL KONFIRMASI HAPUS (Dinamic untuk Karya & Keahlian) */}
       {showDeleteModal && itemToDelete.data && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowDeleteModal(false)}></div>
-          <div className="relative bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
+          <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm" onClick={() => setShowDeleteModal(false)}></div>
+          <div className="relative bg-slate-900/80 rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-800/50">
             <div className="flex flex-col items-center text-center">
-              <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center mb-4"><Trash2 className="w-6 h-6" /></div>
-              <h3 className="text-lg font-bold text-slate-900">Hapus Data</h3>
-              <p className="text-sm text-slate-500 mt-2">
-                Yakin ingin menghapus <span className="font-semibold text-slate-800">"{itemToDelete.data.judul}"</span>? Tindakan ini tidak dapat dibatalkan.
+              <div className="w-12 h-12 rounded-full bg-rose-900/30 text-rose-400 flex items-center justify-center mb-4"><Trash2 className="w-6 h-6" /></div>
+              <h3 className="text-lg font-bold text-slate-100">Hapus Data</h3>
+              <p className="text-sm text-slate-400 mt-2">
+                Yakin ingin menghapus <span className="font-semibold text-slate-200">"{itemToDelete.data.judul}"</span>? Tindakan ini tidak dapat dibatalkan.
               </p>
             </div>
             <div className="grid grid-cols-2 gap-3 mt-6">
-              <button onClick={() => setShowDeleteModal(false)} className="py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm">Batal</button>
-              <button onClick={confirmDelete} className="py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-xl text-sm shadow-md shadow-rose-100">Hapus</button>
+              <button onClick={() => setShowDeleteModal(false)} className="py-2.5 bg-slate-800/50 hover:bg-slate-700 text-slate-600 font-semibold rounded-xl text-sm">Batal</button>
+              <button onClick={confirmDelete} className="py-2.5 bg-rose-700 hover:bg-rose-600 text-white font-semibold rounded-xl text-sm shadow-md shadow-rose-900/30">Hapus</button>
             </div>
           </div>
         </div>
       )}
 
       {/* ==================== SOFT PURPLE NAVBAR ==================== */}
-      <nav className="sticky top-0 z-40 w-full bg-white/80 backdrop-blur-md border-b border-purple-100 shadow-sm shadow-purple-100/20">
+      <nav className="sticky top-0 z-40 w-full bg-slate-900/80 backdrop-blur-md border-b border-indigo-800/40 shadow-sm shadow-indigo-900/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Left: Logo */}
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-gradient-to-br from-purple-500 to-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-200/50">
+              <div className="w-9 h-9 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-900/50">
                 <Briefcase size={18} className="text-white" />
               </div>
-              <span className="font-extrabold tracking-wider text-xl text-gray-900">
-                N9nPort<span className="text-purple-500">Admin</span>
+              <span className="font-extrabold tracking-wider text-xl text-slate-100">
+                N9nPort<span className="text-indigo-400">Admin</span>
               </span>
             </div>
 
@@ -370,8 +421,8 @@ export default function Dashboard() {
                 onClick={() => handleMenuChange('skills')}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
                   activeMenu === 'skills' 
-                    ? 'bg-purple-50 text-purple-600 border border-purple-200' 
-                    : 'text-gray-500 hover:text-purple-600 hover:bg-purple-50/50'
+                    ? 'bg-indigo-600 text-white border border-indigo-500 shadow-lg shadow-indigo-900/40' 
+                    : 'text-slate-300 hover:text-white hover:bg-indigo-600/40'
                 }`}
               >
                 <Layers size={18} />
@@ -381,8 +432,8 @@ export default function Dashboard() {
                 onClick={() => handleMenuChange('portfolio')}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
                   activeMenu === 'portfolio' 
-                    ? 'bg-purple-50 text-purple-600 border border-purple-200' 
-                    : 'text-gray-500 hover:text-purple-600 hover:bg-purple-50/50'
+                    ? 'bg-indigo-600 text-white border border-indigo-500 shadow-lg shadow-indigo-900/40' 
+                    : 'text-slate-300 hover:text-white hover:bg-indigo-600/40'
                 }`}
               >
                 <Briefcase size={18} />
@@ -395,7 +446,7 @@ export default function Dashboard() {
               {/* Logout */}
               <button 
                 onClick={() => setShowLogoutModal(true)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-rose-500 hover:bg-rose-50 transition-all duration-200 border border-transparent hover:border-rose-200"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-rose-400 hover:bg-rose-900/30 transition-all duration-200 border border-transparent hover:border-rose-800/40"
               >
                 <LogOut size={18} />
                 <span className="hidden sm:inline">Logout</span>
@@ -404,7 +455,7 @@ export default function Dashboard() {
               {/* Mobile Menu Toggle */}
               <button 
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="md:hidden p-2 rounded-xl text-gray-500 hover:text-purple-600 hover:bg-purple-50 transition-all"
+                className="md:hidden p-2 rounded-xl text-slate-400 hover:text-indigo-400 hover:bg-indigo-900/40 transition-all"
               >
                 {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
@@ -414,14 +465,14 @@ export default function Dashboard() {
 
         {/* Mobile Menu Dropdown */}
         {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-purple-100 bg-white/95 backdrop-blur-md">
+          <div className="md:hidden border-t border-indigo-800/40 bg-slate-900/95 backdrop-blur-md">
             <div className="px-4 py-3 space-y-1">
               <button
                 onClick={() => handleMenuChange('skills')}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
                   activeMenu === 'skills' 
-                    ? 'bg-purple-50 text-purple-600' 
-                    : 'text-gray-500 hover:text-purple-600 hover:bg-purple-50/50'
+                    ? 'bg-indigo-600 text-white' 
+                    : 'text-slate-300 hover:text-white hover:bg-indigo-600/40'
                 }`}
               >
                 <Layers size={18} />
@@ -431,8 +482,8 @@ export default function Dashboard() {
                 onClick={() => handleMenuChange('portfolio')}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
                   activeMenu === 'portfolio' 
-                    ? 'bg-purple-50 text-purple-600' 
-                    : 'text-gray-500 hover:text-purple-600 hover:bg-purple-50/50'
+                    ? 'bg-indigo-600 text-white' 
+                    : 'text-slate-300 hover:text-white hover:bg-indigo-600/40'
                 }`}
               >
                 <Briefcase size={18} />
@@ -441,7 +492,7 @@ export default function Dashboard() {
               <div className="border-t border-gray-100 pt-2 mt-2">
                 <button 
                   onClick={() => navigate({ to: '/' })}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-500 hover:text-purple-600 hover:bg-purple-50/50 transition-all"
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:text-white hover:bg-indigo-600/40 transition-all"
                 >
                   <Home size={18} />
                   <span>Kembali ke Portfolio</span>
@@ -463,39 +514,39 @@ export default function Dashboard() {
             <>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                  <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Keahlian</h1>
-                  <p className="text-slate-500 text-sm mt-1.5">Kelola daftar skill dan keahlian yang Anda kuasai.</p>
+                  <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-100 tracking-tight">Keahlian</h1>
+                  <p className="text-slate-400 text-sm mt-1.5">Kelola daftar skill dan keahlian yang Anda kuasai.</p>
                 </div>
               </div>
 
               {/* FORM KEAHLIAN */}
-              <div className={`bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.02)] border overflow-hidden transition-colors duration-300 ${isEditingSkill ? 'border-amber-200 bg-amber-50/10' : 'border-slate-100'}`}>
-                <div className="px-6 sm:px-8 py-5 border-b border-slate-50 flex items-center justify-between">
+              <div className={`bg-slate-900/80 backdrop-blur rounded-2xl shadow-[0_4px_20px_rgba(79,70,229,0.15)] border overflow-hidden transition-all duration-300 ${isEditingSkill ? 'border-emerald-800/40 bg-emerald-900/20' : 'border-indigo-800/40'} animate-fade-in-up`}>
+                <div className="px-6 sm:px-8 py-5 border-b border-slate-800/30 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    {isEditingSkill ? <Pencil className="w-5 h-5 text-amber-500" /> : <Plus className="w-5 h-5 text-purple-600" />}
-                    <h2 className="font-extrabold text-base sm:text-lg text-slate-800">{isEditingSkill ? 'Edit Keahlian' : 'Tambah Keahlian Baru'}</h2>
+                    {isEditingSkill ? <Pencil className="w-5 h-5 text-amber-400" /> : <Plus className="w-5 h-5 text-indigo-400" />}
+                    <h2 className="font-extrabold text-base sm:text-lg text-slate-200">{isEditingSkill ? 'Edit Keahlian' : 'Tambah Keahlian Baru'}</h2>
                   </div>
                 </div>
 
                 <form onSubmit={handleSubmitSkill} className="p-6 sm:p-8 space-y-5">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Judul Keahlian <span className="text-rose-500">*</span></label>
+                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Judul Keahlian <span className="text-rose-400">*</span></label>
                     <div className="relative rounded-xl">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"><Layers className="w-5 h-5" /></div>
-                      <input type="text" required value={formSkillJudul} onChange={(e) => setFormSkillJudul(e.target.value)} className="block w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" placeholder="Contoh: HTML & CSS" />
+                      <input type="text" required value={formSkillJudul} onChange={(e) => setFormSkillJudul(e.target.value)} className="block w-full pl-11 pr-4 py-3 bg-slate-800/60 border border-slate-700/50 rounded-xl text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:border-indigo-500" placeholder="Contoh: HTML & CSS" />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Deskripsi <span className="text-rose-500">*</span></label>
-                    <textarea rows={3} required value={formSkillDeskripsi} onChange={(e) => setFormSkillDeskripsi(e.target.value)} className="block w-full px-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" placeholder="Membangun tampilan website yang terstruktur..." />
+                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Deskripsi <span className="text-rose-400">*</span></label>
+                    <textarea rows={3} required value={formSkillDeskripsi} onChange={(e) => setFormSkillDeskripsi(e.target.value)} className="block w-full px-4 py-3 bg-slate-800/60 border border-slate-700/50 rounded-xl text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:border-indigo-500" placeholder="Membangun tampilan website yang terstruktur..." />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Tag / Tools (Pisahkan dgn Koma) <span className="text-rose-500">*</span></label>
+                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Tag / Tools (Pisahkan dgn Koma) <span className="text-rose-400">*</span></label>
                     <div className="relative rounded-xl">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"><TagIcon className="w-5 h-5" /></div>
-                      <input type="text" required value={formSkillTag} onChange={(e) => setFormSkillTag(e.target.value)} className="block w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" placeholder="HTML5, CSS3, Bootstrap" />
+                      <input type="text" required value={formSkillTag} onChange={(e) => setFormSkillTag(e.target.value)} className="block w-full pl-11 pr-4 py-3 bg-slate-800/60 border border-slate-700/50 rounded-xl text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:border-indigo-500" placeholder="HTML5, CSS3, Bootstrap" />
                     </div>
                   </div>
 
@@ -505,7 +556,7 @@ export default function Dashboard() {
                       <button 
                         type="button" 
                         onClick={cancelEditSkillMode} 
-                        className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-all"
+                        className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-bold text-amber-400 bg-amber-900/30 hover:bg-amber-900/50 border border-amber-800/40 transition-all"
                       >
                         <XCircle size={18} />
                         Batal Edit
@@ -513,7 +564,7 @@ export default function Dashboard() {
                     )}
                     <button 
                       type="submit" 
-                      className={`flex-1 flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl text-white font-bold text-sm shadow-md transition-all ${isEditingSkill ? 'bg-amber-500 hover:bg-amber-600' : 'bg-purple-600 hover:bg-purple-700'}`}
+                      className={`flex-1 flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl text-white font-bold text-sm shadow-md transition-all ${isEditingSkill ? 'bg-amber-900/300 hover:bg-amber-900/300' : 'bg-indigo-600 hover:bg-indigo-500'}`}
                     >
                       <CheckCircle size={18} />
                       {isEditingSkill ? 'Simpan Perubahan' : 'Simpan Keahlian'}
@@ -524,34 +575,34 @@ export default function Dashboard() {
 
               {/* DAFTAR KEAHLIAN (CARD DESIGN) */}
               <div className="space-y-4 pt-4">
-                <h3 className="font-extrabold text-slate-900 text-lg tracking-tight">Daftar Keahlian Saat Ini ({skills.length})</h3>
+                <h3 className="font-extrabold text-slate-100 text-lg tracking-tight">Daftar Keahlian Saat Ini ({skills.length})</h3>
                 {skills.length === 0 ? (
-                  <div className="bg-white rounded-2xl p-12 text-center border border-slate-100"><Layers className="mx-auto text-slate-300 w-12 h-12 mb-3" /><p className="text-slate-500">Belum ada data.</p></div>
+                  <div className="bg-slate-900/80 rounded-2xl p-12 text-center border border-slate-800/50"><Layers className="mx-auto text-slate-600 w-12 h-12 mb-3" /><p className="text-slate-400">Belum ada data.</p></div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {skills.map((skill) => (
-                      <div key={skill.id} className="bg-[#fcfaff] border border-purple-100 rounded-[2rem] p-7 relative group shadow-sm hover:shadow-md transition-all">
+                      <div key={skill.id} className="bg-slate-900/60 border border-indigo-800/40 rounded-[2rem] p-7 relative group shadow-sm hover:shadow-md transition-all">
                         {/* Action Buttons */}
                         <div className="absolute top-6 right-6 flex gap-2 lg:opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button onClick={() => startEditSkillMode(skill)} className="p-2 bg-white rounded-xl shadow-sm border border-slate-100 text-amber-500 hover:bg-amber-50"><Pencil size={16} /></button>
-                          <button onClick={() => triggerDeleteConfirm('skill', skill)} className="p-2 bg-white rounded-xl shadow-sm border border-slate-100 text-rose-500 hover:bg-rose-50"><Trash2 size={16} /></button>
+                          <button onClick={() => startEditSkillMode(skill)} className="p-2 bg-white rounded-xl shadow-sm border border-slate-800/50 text-amber-400 hover:bg-amber-900/30"><Pencil size={16} /></button>
+                          <button onClick={() => triggerDeleteConfirm('skill', skill)} className="p-2 bg-white rounded-xl shadow-sm border border-slate-800/50 text-rose-400 hover:bg-rose-900/30"><Trash2 size={16} /></button>
                         </div>
 
                         {/* Icon */}
-                        <div className="w-[60px] h-[60px] bg-white rounded-2xl shadow-[0_2px_15px_rgba(0,0,0,0.03)] flex items-center justify-center mb-6 border border-slate-50">
-                          <LayoutGrid className="w-8 h-8 text-purple-600" />
+                        <div className="w-[60px] h-[60px] bg-slate-900/80 rounded-2xl shadow-[0_2px_15px_rgba(0,0,0,0.03)] flex items-center justify-center mb-6 border border-slate-800/30">
+                          <LayoutGrid className="w-8 h-8 text-indigo-400" />
                         </div>
 
                         {/* Content */}
-                        <h4 className="text-xl font-extrabold text-slate-800 mb-3">{skill.judul}</h4>
-                        <p className="text-slate-500 text-[15px] leading-relaxed mb-6 line-clamp-3">
+                        <h4 className="text-xl font-extrabold text-slate-200 mb-3">{skill.judul}</h4>
+                        <p className="text-slate-400 text-[15px] leading-relaxed mb-6 line-clamp-3">
                           {skill.deskripsi}
                         </p>
 
                         {/* Tags */}
                         <div className="flex flex-wrap gap-2.5">
                           {skill.tag.split(',').map((t, idx) => (
-                            <span key={idx} className="bg-white px-3.5 py-1.5 rounded-full text-purple-700 text-xs font-bold shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-50">
+                            <span key={idx} className="bg-white px-3.5 py-1.5 rounded-full text-indigo-400 text-xs font-bold shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-800/30">
                               {t.trim()}
                             </span>
                           ))}
@@ -572,51 +623,51 @@ export default function Dashboard() {
             <>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                  <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Karya Saya</h1>
-                  <p className="text-slate-500 text-sm mt-1.5">Tambah, edit, atau hapus item portofolio yang tampil di halaman depan.</p>
+                  <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-100 tracking-tight">Karya Saya</h1>
+                  <p className="text-slate-400 text-sm mt-1.5">Tambah, edit, atau hapus item portofolio yang tampil di halaman depan.</p>
                 </div>
               </div>
 
               {/* FORM KARYA SAYA */}
-              <div className={`bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.02)] border overflow-hidden transition-colors duration-300 ${isEditingPortfolio ? 'border-amber-200 bg-amber-50/10' : 'border-slate-100'}`}>
-                <div className="px-6 sm:px-8 py-5 border-b border-slate-50 flex items-center justify-between">
+              <div className={`bg-slate-900/80 backdrop-blur rounded-2xl shadow-[0_4px_20px_rgba(79,70,229,0.15)] border overflow-hidden transition-all duration-300 ${isEditingPortfolio ? 'border-emerald-800/40 bg-emerald-900/20' : 'border-indigo-800/40'} animate-fade-in-up`}>
+                <div className="px-6 sm:px-8 py-5 border-b border-slate-800/30 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    {isEditingPortfolio ? <Pencil className="w-5 h-5 text-amber-500" /> : <Plus className="w-5 h-5 text-purple-600" />}
-                    <h2 className="font-extrabold text-base sm:text-lg text-slate-800">{isEditingPortfolio ? 'Edit Karya' : 'Tambah Karya Baru'}</h2>
+                    {isEditingPortfolio ? <Pencil className="w-5 h-5 text-amber-400" /> : <Plus className="w-5 h-5 text-indigo-400" />}
+                    <h2 className="font-extrabold text-base sm:text-lg text-slate-200">{isEditingPortfolio ? 'Edit Karya' : 'Tambah Karya Baru'}</h2>
                   </div>
                 </div>
 
                 <form onSubmit={handleSubmitPortfolio} className="p-6 sm:p-8 space-y-5">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Judul Proyek <span className="text-rose-500">*</span></label>
+                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Judul Proyek <span className="text-rose-400">*</span></label>
                     <div className="relative rounded-xl">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"><FileText className="w-5 h-5" /></div>
-                      <input type="text" required value={formJudul} onChange={(e) => setFormJudul(e.target.value)} className="block w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" placeholder="Contoh: Aplikasi Kasir" />
+                      <input type="text" required value={formJudul} onChange={(e) => setFormJudul(e.target.value)} className="block w-full pl-11 pr-4 py-3 bg-slate-800/60 border border-slate-700/50 rounded-xl text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:border-indigo-500" placeholder="Contoh: Aplikasi Kasir" />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Deskripsi Singkat <span className="text-rose-500">*</span></label>
-                    <textarea rows={3} required value={formDeskripsi} onChange={(e) => setFormDeskripsi(e.target.value)} className="block w-full px-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" placeholder="Deskripsikan fitur..." />
+                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Deskripsi Singkat <span className="text-rose-400">*</span></label>
+                    <textarea rows={3} required value={formDeskripsi} onChange={(e) => setFormDeskripsi(e.target.value)} className="block w-full px-4 py-3 bg-slate-800/60 border border-slate-700/50 rounded-xl text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:border-indigo-500" placeholder="Deskripsikan fitur..." />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     {/* Area Input Gambar Dinamis (URL atau Upload) */}
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Gambar Proyek</label>
-                        <div className="flex bg-slate-100 rounded-lg p-1">
+                        <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">Gambar Proyek</label>
+                        <div className="flex bg-slate-800/50 rounded-lg p-1">
                           <button
                             type="button"
                             onClick={() => { setImageInputType('url'); setFormGambar(''); }}
-                            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-md transition-all ${imageInputType === 'url' ? 'bg-white text-purple-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-md transition-all ${imageInputType === 'url' ? 'bg-indigo-900/60 text-indigo-400 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                           >
                             <LinkIcon size={12} /> Link
                           </button>
                           <button
                             type="button"
                             onClick={() => { setImageInputType('file'); setFormGambar(''); }}
-                            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-md transition-all ${imageInputType === 'file' ? 'bg-white text-purple-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-md transition-all ${imageInputType === 'file' ? 'bg-indigo-900/60 text-indigo-400 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                           >
                             <UploadCloud size={12} /> Upload
                           </button>
@@ -626,15 +677,15 @@ export default function Dashboard() {
                       {imageInputType === 'url' ? (
                         <div className="relative rounded-xl">
                           <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"><ImageIcon className="w-5 h-5" /></div>
-                          <input type="url" value={formGambar} onChange={(e) => setFormGambar(e.target.value)} className="block w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" placeholder="https://..." />
+                          <input type="url" value={formGambar} onChange={(e) => setFormGambar(e.target.value)} className="block w-full pl-11 pr-4 py-3 bg-slate-800/60 border border-slate-700/50 rounded-xl text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:border-indigo-500" placeholder="https://..." />
                         </div>
                       ) : (
-                        <div className="relative flex flex-col items-center justify-center p-3.5 border-2 border-dashed border-slate-300 rounded-xl bg-slate-50/50 hover:bg-slate-100 transition-colors cursor-pointer group h-[46px] mt-[2px]">
+                        <div className="relative flex flex-col items-center justify-center p-3.5 border-2 border-dashed border-slate-600/50 rounded-xl bg-slate-800/60 hover:bg-slate-800/50 transition-colors cursor-pointer group h-[46px] mt-[2px]">
                           <input type="file" accept="image/*" onChange={handleImageUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
                           <div className="flex items-center gap-2">
-                            <UploadCloud className="w-5 h-5 text-slate-400 group-hover:text-purple-500 transition-colors" />
-                            <span className="text-xs font-semibold text-slate-500">
-                              {formGambar ? <span className="text-emerald-600">✓ Gambar berhasil dimuat</span> : 'Pilih dari folder...'}
+                            <UploadCloud className="w-5 h-5 text-slate-400 group-hover:text-indigo-400 transition-colors" />
+                            <span className="text-xs font-semibold text-slate-400">
+                              {formGambar ? <span className="text-emerald-400">✓ Gambar berhasil dimuat</span> : 'Pilih dari folder...'}
                             </span>
                           </div>
                         </div>
@@ -642,19 +693,19 @@ export default function Dashboard() {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Teknologi (Pisahkan dgn Koma) <span className="text-rose-500">*</span></label>
+                      <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Teknologi (Pisahkan dgn Koma) <span className="text-rose-400">*</span></label>
                       <div className="relative rounded-xl">
                         <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"><TagIcon className="w-5 h-5" /></div>
-                        <input type="text" required value={formTag} onChange={(e) => setFormTag(e.target.value)} className="block w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" placeholder="React, Node.js" />
+                        <input type="text" required value={formTag} onChange={(e) => setFormTag(e.target.value)} className="block w-full pl-11 pr-4 py-3 bg-slate-800/60 border border-slate-700/50 rounded-xl text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:border-indigo-500" placeholder="React, Node.js" />
                       </div>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Link GitHub</label>
+                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Link GitHub</label>
                     <div className="relative rounded-xl">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"><FolderGit className="w-5 h-5" /></div>
-                      <input type="url" value={formGithub} onChange={(e) => setFormGithub(e.target.value)} className="block w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500" placeholder="https://github.com/..." />
+                      <input type="url" value={formGithub} onChange={(e) => setFormGithub(e.target.value)} className="block w-full pl-11 pr-4 py-3 bg-slate-800/60 border border-slate-700/50 rounded-xl text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:border-indigo-500" placeholder="https://github.com/..." />
                     </div>
                   </div>
 
@@ -664,7 +715,7 @@ export default function Dashboard() {
                       <button 
                         type="button" 
                         onClick={cancelEditPortfolioMode} 
-                        className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-all"
+                        className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-bold text-amber-400 bg-amber-900/30 hover:bg-amber-900/50 border border-amber-800/40 transition-all"
                       >
                         <XCircle size={18} />
                         Batal Edit
@@ -672,7 +723,7 @@ export default function Dashboard() {
                     )}
                     <button 
                       type="submit" 
-                      className={`flex-1 flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl text-white font-bold text-sm shadow-md transition-all ${isEditingPortfolio ? 'bg-amber-500 hover:bg-amber-600' : 'bg-purple-600 hover:bg-purple-700'}`}
+                      className={`flex-1 flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl text-white font-bold text-sm shadow-md transition-all ${isEditingPortfolio ? 'bg-amber-900/300 hover:bg-amber-900/300' : 'bg-indigo-600 hover:bg-indigo-500'}`}
                     >
                       <CheckCircle size={18} />
                       {isEditingPortfolio ? 'Simpan Perubahan' : 'Simpan Karya'}
@@ -683,27 +734,27 @@ export default function Dashboard() {
 
               {/* LIST KARYA SAYA */}
               <div className="space-y-4 pt-4">
-                <h3 className="font-extrabold text-slate-900 text-lg tracking-tight">Daftar Karya Saat Ini ({portfolios.length})</h3>
+                <h3 className="font-extrabold text-slate-100 text-lg tracking-tight">Daftar Karya Saat Ini ({portfolios.length})</h3>
                 {portfolios.length === 0 ? (
-                  <div className="bg-white rounded-2xl p-12 text-center border border-slate-100 shadow-sm"><Briefcase className="mx-auto text-slate-300 w-12 h-12 mb-3" /><p className="text-slate-500 font-medium">Belum ada karya.</p></div>
+                  <div className="bg-slate-900/80 rounded-2xl p-12 text-center border border-slate-800/50 shadow-sm"><Briefcase className="mx-auto text-slate-600 w-12 h-12 mb-3" /><p className="text-slate-400 font-medium">Belum ada karya.</p></div>
                 ) : (
                   <div className="space-y-4">
                     {portfolios.map((portfolio) => (
-                      <div key={portfolio.id} className={`bg-white rounded-2xl border p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 ${isEditingPortfolio && editPortfolioId === portfolio.id ? 'border-amber-300 ring-2 ring-amber-500/20' : 'border-slate-100'}`}>
+                      <div key={portfolio.id} className={`bg-slate-900/80 rounded-2xl border p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 ${isEditingPortfolio && editPortfolioId === portfolio.id ? 'border-amber-700/50 ring-2 ring-amber-600/30' : 'border-slate-800/50'}`}>
                         <div className="flex flex-col sm:flex-row gap-5 items-start sm:items-center flex-1 min-w-0">
-                          <div className="w-full sm:w-28 h-20 bg-slate-50 rounded-xl overflow-hidden flex-shrink-0 border border-slate-100"><img src={portfolio.gambar} alt={portfolio.judul} className="w-full h-full object-cover" /></div>
+                          <div className="w-full sm:w-28 h-20 bg-slate-800/50 rounded-xl overflow-hidden flex-shrink-0 border border-slate-800/50"><img src={portfolio.gambar ?? ''} alt={portfolio.judul} className="w-full h-full object-cover" /></div>
                           <div className="space-y-1.5 flex-1 min-w-0">
-                            <h4 className="font-extrabold text-slate-900 text-base sm:text-lg flex items-center gap-2"><span>{portfolio.judul}</span></h4>
-                            <p className="text-slate-500 text-xs sm:text-sm line-clamp-2 pr-4">{portfolio.deskripsi}</p>
+                            <h4 className="font-extrabold text-slate-100 text-base sm:text-lg flex items-center gap-2"><span>{portfolio.judul}</span></h4>
+                            <p className="text-slate-400 text-xs sm:text-sm line-clamp-2 pr-4">{portfolio.deskripsi}</p>
                             <div className="flex flex-wrap items-center gap-2 pt-1">
-                              {portfolio.tag.split(',').map((tech, idx) => <span key={idx} className="px-2.5 py-0.5 bg-purple-50 text-purple-600 rounded-md text-xs font-bold">{tech.trim()}</span>)}
-                              {portfolio.github && <a href={portfolio.github} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-slate-50 text-slate-600 rounded-md text-xs font-semibold border"><FaGithub size={12} /><span>GitHub</span></a>}
+                              {portfolio.tag.split(',').map((tech, idx) => <span key={idx} className="px-2.5 py-0.5 bg-indigo-900/40 text-indigo-400 rounded-md text-xs font-bold">{tech.trim()}</span>)}
+                              {portfolio.github && <a href={portfolio.github} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-slate-800/50 text-slate-400 rounded-md text-xs font-semibold border"><FaGithub size={12} /><span>GitHub</span></a>}
                             </div>
                           </div>
                         </div>
-                        <div className="flex-shrink-0 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100 flex items-center justify-end gap-2">
-                          <button onClick={() => startEditPortfolioMode(portfolio)} className="p-2.5 rounded-xl border bg-slate-50 text-slate-500 hover:text-amber-600 hover:bg-amber-50"><Pencil size={18} /></button>
-                          <button onClick={() => triggerDeleteConfirm('portfolio', portfolio)} className="p-2.5 rounded-xl border bg-slate-50 text-slate-500 hover:text-rose-600 hover:bg-rose-50"><Trash2 size={18} /></button>
+                        <div className="flex-shrink-0 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-800/50 flex items-center justify-end gap-2">
+                          <button onClick={() => startEditPortfolioMode(portfolio)} className="p-2.5 rounded-xl border bg-slate-800/50 text-slate-400 hover:text-amber-400 hover:bg-amber-900/30"><Pencil size={18} /></button>
+                          <button onClick={() => triggerDeleteConfirm('portfolio', portfolio)} className="p-2.5 rounded-xl border bg-slate-800/50 text-slate-400 hover:text-rose-400 hover:bg-rose-900/30"><Trash2 size={18} /></button>
                         </div>
                       </div>
                     ))}

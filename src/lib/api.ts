@@ -57,12 +57,12 @@ export const deleteSkill = async (id: string) => {
 
 // ── PORTFOLIOS ────────────────────────────────────
 export const getPortfolios = async () => {
-  const res = await fetch(`${BASE_URL}/api/portfolios`);
+  const res = await fetch(`${BASE_URL}/api/portofolio`);
   return res.json();
 };
 
 export const createPortfolio = async (data: object) => {
-  const res = await fetchWithAuth("/api/portfolios", {
+  const res = await fetchWithAuth("/api/portofolio", {
     method: "POST",
     body: JSON.stringify(data),
   });
@@ -70,7 +70,7 @@ export const createPortfolio = async (data: object) => {
 };
 
 export const updatePortfolio = async (id: string, data: object) => {
-  const res = await fetchWithAuth(`/api/portfolios/${id}`, {
+  const res = await fetchWithAuth(`/api/portofolio/${id}`, {
     method: "PUT",
     body: JSON.stringify(data),
   });
@@ -78,7 +78,7 @@ export const updatePortfolio = async (id: string, data: object) => {
 };
 
 export const deletePortfolio = async (id: string) => {
-  const res = await fetchWithAuth(`/api/portfolios/${id}`, { method: "DELETE" });
+  const res = await fetchWithAuth(`/api/portofolio/${id}`, { method: "DELETE" });
   return res.json();
 };
 

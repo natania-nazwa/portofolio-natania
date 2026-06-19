@@ -1,0 +1,50 @@
+:root{
+  --indigo-50:#eef2ff;
+  --indigo-100:#e0e7ff;
+  --indigo-200:#c7d2fe;
+  --indigo-300:#a5b4fc;
+  --indigo-400:#818cf8;
+  --indigo-500:#6366f1;
+  --indigo-600:#4f46e5;
+  --indigo-700:#4338ca;
+  --indigo-800:#3730a3;
+  --indigo-900:#312e81;
+
+  --purple-50:#f5f3ff;
+  --purple-100:#ede9fe;
+  --purple-200:#ddd6fe;
+  --purple-300:#c4b5fd;
+  --purple-400:#a78bfa;
+  --purple-500:#8b5cf6;
+  --purple-600:#7c3aed;
+  --purple-700:#6d28d9;
+  --purple-800:#5b21b6;
+  --purple-900:#4c1d95;
+
+  --bg:#ffffff;
+  --card:rgba(255,255,255,.78);
+  --text:#0f172a;
+  --muted:#475569;
+  --border:rgba(167,139,250,.35);
+
+  --accent:var(--purple-600);
+  --accent-2:var(--indigo-600);
+  --accent-bg:rgba(139,92,246,.12);
+  --accent-border:rgba(139,92,246,.35);
+  --shadow:0 10px 30px rgba(99,102,241,.18);
+}
+
+/* if the app ever uses dark mode, keep it bright-purple tinted */
+:root.dark{
+  --bg:#0b0820;
+  --card:rgba(17,13,46,.72);
+  --text:#eae6ff;
+  --muted:#b7b0e9;
+  --border:rgba(167,139,250,.25);
+  --accent:var(--purple-500);
+  --accent-2:var(--indigo-500);
+  --accent-bg:rgba(139,92,246,.14);
+  --accent-border:rgba(167,139,250,.35);
+  --shadow:0 12px 40px rgba(139,92,246,.22);
+}
+
