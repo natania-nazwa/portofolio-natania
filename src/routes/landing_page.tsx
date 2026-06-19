@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useEffect, useState, type SetStateAction } from 'react'
+import { useEffect, useState, useRef, type SetStateAction } from 'react'
 import { FaGithub, FaInstagram } from 'react-icons/fa'
 import {
   Briefcase,
@@ -13,9 +13,14 @@ import {
   School,
   User,
   X,
+  MapPin,
+  FileText,
+  GraduationCap,
+  Award,
+  Download,
+  Printer,
 } from 'lucide-react'
 import { getPortfolios, getSkills } from '../lib/api'
-
 
 // --- INTERFACE TYPESCRIPT ---
 interface Portfolio {
@@ -46,7 +51,10 @@ export default function LandingPage() {
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isLoadingPortfolios, setIsLoadingPortfolios] = useState(true)
+  const [isCvModalOpen, setIsCvModalOpen] = useState(false)
+  const [isDownloading, setIsDownloading] = useState(false)
 
+  const cvRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     getPortfolios()
@@ -62,13 +70,396 @@ export default function LandingPage() {
       })
   }, [])
 
+  // Lock scroll when modal is open
+  useEffect(() => {
+    if (isCvModalOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isCvModalOpen])
+
   const goToLanding = () => setIsMobileMenuOpen(false)
 
   const contactMailto = 'mailto:nazwanasyahrani@gmail.com'
-  const contactInstagram = 'https://instagram.com/ntninzwgsla'
-  const contactSchoolSearch =
-    'https://www.google.com/search?q=SMKS+PGRI+WLINGI'
+  const contactInstagram = 'https://www.instagram.com/ntninzwgsla/'
+  const contactSchoolSearch = 'https://www.google.com/search?q=SMKS+PGRI+WLINGI'
 
+  // ============ HELPER: Convert oklch to rgb ============
+  const convertOklchToRgb = (element: HTMLElement) => {
+    const allElements = element.querySelectorAll('*')
+    allElements.forEach((el) => {
+      const htmlEl = el as HTMLElement
+      const computedStyle = window.getComputedStyle(htmlEl)
+      
+      // Convert background-color
+      const bgColor = computedStyle.backgroundColor
+      if (bgColor.includes('oklch')) {
+        htmlEl.style.backgroundColor = '#ffffff'
+      }
+      
+      // Convert color (text)
+      const color = computedStyle.color
+      if (color.includes('oklch')) {
+        htmlEl.style.color = '#1e293b'
+      }
+      
+      // Convert border-color
+      const borderColor = computedStyle.borderColor
+      if (borderColor.includes('oklch')) {
+        htmlEl.style.borderColor = '#e2e8f0'
+      }
+    })
+  }
+
+  // ============ DOWNLOAD PDF FUNCTION ============
+  const downloadPDF = async () => {
+    setIsDownloading(true)
+    try {
+      const html2canvas = (await import('html2canvas')).default
+      const { jsPDF } = await import('jspdf')
+
+      const element = cvRef.current
+      if (!element) {
+        throw new Error('CV element not found')
+      }
+
+      // Tunggu semua gambar selesai load
+      const imgs = Array.from(element.querySelectorAll('img'))
+      await Promise.all(
+        imgs.map((img) => {
+          return new Promise<void>((resolve) => {
+            if (img.complete && img.naturalWidth > 0) return resolve()
+            const onDone = () => resolve()
+            img.addEventListener('load', onDone, { once: true })
+            img.addEventListener('error', onDone, { once: true })
+          })
+        }),
+      )
+
+      // Jeda kecil agar browser selesai render
+      await new Promise((r) => setTimeout(r, 200))
+
+      // Clone element untuk dimodifikasi tanpa mengubah DOM asli
+      const clone = element.cloneNode(true) as HTMLElement
+      clone.style.position = 'fixed'
+      clone.style.left = '-9999px'
+      clone.style.top = '0'
+      clone.style.visibility = 'visible'
+      clone.style.opacity = '1'
+      clone.style.zIndex = '99999'
+      document.body.appendChild(clone)
+
+      // Konversi oklch ke rgb
+      convertOklchToRgb(clone)
+
+      // Jeda setelah konversi
+      await new Promise((r) => setTimeout(r, 100))
+
+      const canvas = await html2canvas(clone, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        removeContainer: true,
+        foreignObjectRendering: false,
+      })
+
+      // Hapus clone setelah capture
+      document.body.removeChild(clone)
+
+      const imgData = canvas.toDataURL('image/png', 1.0)
+      const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' })
+
+      const pdfWidth = pdf.internal.pageSize.getWidth()
+      const pdfHeight = pdf.internal.pageSize.getHeight()
+      const imgWidth = canvas.width
+      const imgHeight = canvas.height
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight)
+
+      const imgX = (pdfWidth - imgWidth * ratio) / 2
+      const scaledHeight = imgHeight * ratio
+
+      let heightLeft = scaledHeight
+      let position = 0
+
+      pdf.addImage(imgData, 'PNG', imgX, position, imgWidth * ratio, scaledHeight)
+      heightLeft -= pdfHeight
+
+      while (heightLeft > 0) {
+        position = heightLeft - scaledHeight
+        pdf.addPage()
+        pdf.addImage(imgData, 'PNG', imgX, position, imgWidth * ratio, scaledHeight)
+        heightLeft -= pdfHeight
+      }
+
+      pdf.save('CV-Natania-Nazwa-Gisella-Nasyahrani.pdf')
+    } catch (error) {
+      console.error('Error generating PDF:', error)
+      const message = error instanceof Error ? error.message : String(error)
+      alert('Gagal mengunduh PDF: ' + message)
+    } finally {
+      setIsDownloading(false)
+    }
+  }
+
+  // ============ PRINT FUNCTION ============
+  const printCV = () => {
+    const printWindow = window.open('', '_blank')
+    if (!printWindow) return
+
+    const cvContent = cvRef.current?.innerHTML
+    if (!cvContent) return
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>CV - Natania Nazwa Gisella Nasyahrani</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+          @page { margin: 0; size: auto; }
+          body { background: #ffffff; color: #1e293b; font-family: system-ui, -apple-system, sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          .print-container { max-width: 210mm; margin: 0 auto; padding: 20mm; }
+        </style>
+      </head>
+      <body>
+        <div class="print-container">
+          ${cvContent}
+        </div>
+        <script>window.onload = () => { setTimeout(() => { window.print(); window.close(); }, 300); }</script>
+      </body>
+      </html>
+    `)
+    printWindow.document.close()
+  }
+
+  // ============ CV CONTENT COMPONENT ============
+  const CVContent = () => (
+    <div data-cv-content className="bg-white p-8 md:p-12" style={{ width: '210mm', maxWidth: '100%' }}>
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight mb-3">
+          NATANIA NAZWA
+          <span style={{ color: '#4f46e5' }}> GIS</span>ELLA NASYAHRANI
+        </h1>
+        <div className="flex flex-wrap items-center gap-2 text-sm" style={{ color: '#475569' }}>
+          <span className="flex items-center gap-1">
+            <GraduationCap size={14} style={{ color: '#4f46e5' }} />
+            Siswi SMK Kelas XI
+          </span>
+          <span style={{ color: '#818cf8' }}>•</span>
+          <span style={{ color: '#4f46e5', fontWeight: 500 }}>Rekayasa Perangkat Lunak</span>
+          <span style={{ color: '#818cf8' }}>•</span>
+          <span className="flex items-center gap-1">
+            <School size={14} style={{ color: '#4f46e5' }} />
+            SMK PGRI Wlingi, Blitar
+          </span>
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-3 text-xs" style={{ color: '#64748b' }}>
+          <span className="flex items-center gap-1">
+            <Phone size={12} />
+            +62 813-3593-4870
+          </span>
+          <span>•</span>
+          <span className="flex items-center gap-1">
+            <Mail size={12} />
+            nazwanasyahrani@gmail.com
+          </span>
+          <span>•</span>
+          <span className="flex items-center gap-1">
+            <MapPin size={12} />
+            Blitar, Jawa Timur
+          </span>
+        </div>
+      </div>
+
+      {/* PROFIL */}
+      <div className="mb-8">
+        <h2 className="text-sm font-bold tracking-widest uppercase mb-3 pb-2" style={{ color: '#4f46e5', borderBottom: '2px solid #e0e7ff' }}>
+          Profil
+        </h2>
+        <p className="text-sm leading-relaxed" style={{ color: '#334155' }}>
+          Siswi kelas XI Jurusan Rekayasa Perangkat Lunak dengan kemampuan pengembangan web menggunakan 
+          <span style={{ color: '#4f46e5', fontWeight: 500 }}> React, Tailwind CSS, HTML, CSS, </span> dan 
+          <span style={{ color: '#4f46e5', fontWeight: 500 }}> JavaScript</span>. 
+          Tertarik pada dunia Front-End Development dan terus berusaha mempelajari teknologi terbaru. 
+          Memiliki ambisi besar untuk terus belajar, menghadapi tantangan baru, dan gigih berusaha memberikan hasil terbaik.
+        </p>
+      </div>
+
+      {/* DATA DIRI */}
+      <div className="mb-8">
+        <h2 className="text-sm font-bold tracking-widest uppercase mb-3 pb-2" style={{ color: '#4f46e5', borderBottom: '2px solid #e0e7ff' }}>
+          Data Diri
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 text-sm">
+          <div className="flex">
+            <span className="w-40 font-medium" style={{ color: '#475569' }}>Tempat, Tanggal Lahir</span>
+            <span style={{ color: '#1e293b' }}>: Blitar, 21 November 2008</span>
+          </div>
+          <div className="flex">
+            <span className="w-40 font-medium" style={{ color: '#475569' }}>Jenis Kelamin</span>
+            <span style={{ color: '#1e293b' }}>: Perempuan</span>
+          </div>
+          <div className="flex">
+            <span className="w-40 font-medium" style={{ color: '#475569' }}>Kewarganegaraan</span>
+            <span style={{ color: '#1e293b' }}>: Indonesia</span>
+          </div>
+          <div className="flex">
+            <span className="w-40 font-medium" style={{ color: '#475569' }}>Alamat</span>
+            <span style={{ color: '#1e293b' }}>: Blitar, Jawa Timur</span>
+          </div>
+          <div className="flex">
+            <span className="w-40 font-medium" style={{ color: '#475569' }}>No. HP / WhatsApp</span>
+            <span style={{ color: '#1e293b' }}>: +62 813-3593-4870</span>
+          </div>
+          <div className="flex">
+            <span className="w-40 font-medium" style={{ color: '#475569' }}>Email</span>
+            <span style={{ color: '#1e293b' }}>: nazwanasyahrani@gmail.com</span>
+          </div>
+          <div className="flex">
+            <span className="w-40 font-medium" style={{ color: '#475569' }}>Portofolio</span>
+            <span style={{ color: '#1e293b' }}>: https://natania-nazwa.github.io</span>
+          </div>
+        </div>
+      </div>
+
+      {/* PENDIDIKAN */}
+      <div className="mb-8">
+        <h2 className="text-sm font-bold tracking-widest uppercase mb-3 pb-2" style={{ color: '#4f46e5', borderBottom: '2px solid #e0e7ff' }}>
+          Pendidikan
+        </h2>
+        <div className="mb-3">
+          <div className="flex flex-wrap items-center gap-2 mb-2">
+            <span className="font-bold text-sm" style={{ color: '#0f172a' }}>SMK PGRI Wlingi</span>
+            <span className="text-sm font-medium" style={{ color: '#4f46e5' }}>| Rekayasa Perangkat Lunak (RPL)</span>
+            <span className="text-sm" style={{ color: '#94a3b8' }}>| 2023 – Sekarang</span>
+          </div>
+          <ul className="list-disc list-inside text-sm space-y-1 ml-2" style={{ color: '#475569' }}>
+            <li>Sedang menempuh pendidikan di jurusan RPL dengan fokus mempelajari dasar-dasar pemrograman web dan aplikasi</li>
+            <li>Terus berusaha mendalami mata pelajaran utama seperti Pemrograman Web, Pemrograman Perangkat Bergerak, dan Basis Data</li>
+          </ul>
+        </div>
+      </div>
+
+      {/* KOMPETENSI TEKNIS */}
+      <div className="mb-8">
+        <h2 className="text-sm font-bold tracking-widest uppercase mb-3 pb-2" style={{ color: '#4f46e5', borderBottom: '2px solid #e0e7ff' }}>
+          Kompetensi Teknis
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="rounded-xl p-4 border" style={{ backgroundColor: '#eef2ff', borderColor: '#e0e7ff' }}>
+            <h3 className="text-xs font-bold uppercase mb-3" style={{ color: '#4338ca' }}>Bahasa & Database</h3>
+            <ul className="space-y-2 text-sm" style={{ color: '#334155' }}>
+              <li className="flex items-center gap-2">
+                <Code2 size={14} style={{ color: '#6366f1' }} />
+                HTML
+              </li>
+              <li className="flex items-center gap-2">
+                <Code2 size={14} style={{ color: '#6366f1' }} />
+                CSS
+              </li>
+              <li className="flex items-center gap-2">
+                <Code2 size={14} style={{ color: '#6366f1' }} />
+                JavaScript
+              </li>
+              <li className="flex items-center gap-2">
+                <Code2 size={14} style={{ color: '#6366f1' }} />
+                MySQL
+              </li>
+            </ul>
+          </div>
+          <div className="rounded-xl p-4 border" style={{ backgroundColor: '#eef2ff', borderColor: '#e0e7ff' }}>
+            <h3 className="text-xs font-bold uppercase mb-3" style={{ color: '#4338ca' }}>Framework & Tools</h3>
+            <ul className="space-y-2 text-sm" style={{ color: '#334155' }}>
+              <li className="flex items-center gap-2">
+                <LayoutDashboard size={14} style={{ color: '#6366f1' }} />
+                React
+              </li>
+              <li className="flex items-center gap-2">
+                <LayoutDashboard size={14} style={{ color: '#6366f1' }} />
+                Tailwind CSS
+              </li>
+              <li className="flex items-center gap-2">
+                <LayoutDashboard size={14} style={{ color: '#6366f1' }} />
+                Git & GitHub
+              </li>
+              <li className="flex items-center gap-2">
+                <LayoutDashboard size={14} style={{ color: '#6366f1' }} />
+                VS Code
+              </li>
+            </ul>
+          </div>
+          <div className="rounded-xl p-4 border" style={{ backgroundColor: '#eef2ff', borderColor: '#e0e7ff' }}>
+            <h3 className="text-xs font-bold uppercase mb-3" style={{ color: '#4338ca' }}>Soft Skills</h3>
+            <ul className="space-y-2 text-sm" style={{ color: '#334155' }}>
+              <li className="flex items-center gap-2">
+                <Award size={14} style={{ color: '#6366f1' }} />
+                Gigih & Berorientasi Target
+              </li>
+              <li className="flex items-center gap-2">
+                <Award size={14} style={{ color: '#6366f1' }} />
+                Bertanggung Jawab
+              </li>
+              <li className="flex items-center gap-2">
+                <Award size={14} style={{ color: '#6366f1' }} />
+                Kerja Tim & Komunikasi
+              </li>
+              <li className="flex items-center gap-2">
+                <Award size={14} style={{ color: '#6366f1' }} />
+                Problem Solving
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* ORGANISASI */}
+      <div className="mb-8">
+        <h2 className="text-sm font-bold tracking-widest uppercase mb-3 pb-2" style={{ color: '#4f46e5', borderBottom: '2px solid #e0e7ff' }}>
+          Organisasi
+        </h2>
+        <div className="space-y-4">
+          <div>
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <span className="font-bold text-sm" style={{ color: '#0f172a' }}>OSIS SMK PGRI Wlingi</span>
+              <span className="text-sm font-medium" style={{ color: '#4f46e5' }}>| Anggota Aktif</span>
+              <span className="text-sm" style={{ color: '#94a3b8' }}>| 2024 – Sekarang</span>
+            </div>
+            <ul className="list-disc list-inside text-sm space-y-1 ml-2" style={{ color: '#475569' }}>
+              <li>Aktif berpartisipasi dalam kegiatan organisasi sekolah</li>
+              <li>Berkolaborasi dengan anggota lain dalam pelaksanaan program kerja</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* PROYEK */}
+      <div className="mb-4">
+        <h2 className="text-sm font-bold tracking-widest uppercase mb-3 pb-2" style={{ color: '#4f46e5', borderBottom: '2px solid #e0e7ff' }}>
+          Proyek
+        </h2>
+        <div className="space-y-4">
+          <div>
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <span className="font-bold text-sm" style={{ color: '#0f172a' }}>N9nPort Portfolio Website</span>
+              <span className="text-sm font-medium" style={{ color: '#4f46e5' }}>| Personal Project</span>
+              <span className="text-sm" style={{ color: '#94a3b8' }}>| 2025</span>
+            </div>
+            <ul className="list-disc list-inside text-sm space-y-1 ml-2" style={{ color: '#475569' }}>
+              <li>Membangun website portofolio pribadi menggunakan React dan Tailwind CSS</li>
+              <li>Mengimplementasikan desain responsif dan animasi interaktif</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-purple-950 font-sans text-slate-100 overflow-x-hidden relative">
@@ -76,6 +467,22 @@ export default function LandingPage() {
       <div className="fixed top-[-10%] left-[-10%] w-96 h-96 bg-indigo-700 rounded-full mix-blend-multiply filter blur-[110px] opacity-20 z-0 animate-pulse" />
       <div className="fixed top-[20%] right-[-5%] w-72 h-72 bg-purple-700 rounded-full mix-blend-multiply filter blur-[90px] opacity-15 z-0 animate-pulse" style={{ animationDelay: '2s' }} />
       <div className="fixed bottom-[-10%] left-[20%] w-80 h-80 bg-purple-800 rounded-full mix-blend-multiply filter blur-[110px] opacity-10 z-0 animate-pulse" style={{ animationDelay: '4s' }} />
+
+      {/* ========== HIDDEN CV FOR PDF CAPTURE ========== */}
+      <div
+        ref={cvRef}
+        className="fixed top-0 left-0 pointer-events-none"
+        style={{
+          position: 'absolute',
+          left: '-9999px',
+          top: '0',
+          visibility: 'hidden',
+          opacity: '0',
+          zIndex: -1,
+        }}
+      >
+        <CVContent />
+      </div>
 
       {/* NAVBAR */}
       <nav className="fixed w-full z-50 top-0 transition-all duration-300 bg-slate-900/80 backdrop-blur-md border-b border-indigo-800/40 shadow-sm">
@@ -193,13 +600,21 @@ export default function LandingPage() {
         <section id="tentang" className="py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-              <div className="relative flex justify-center">
+              <div className="relative flex justify-center flex-col items-center">
                 <div className="bg-indigo-900/400 w-80 h-[28rem] rounded-3xl rotate-3 opacity-15 absolute top-0 left-1/2 -translate-x-1/2" />
                 <img
                   src="natania-portofolio.jpeg"
                   alt="Foto Profil"
                   className="relative z-10 w-80 h-[28rem] object-cover rounded-3xl shadow-[0_20px_60px_rgba(79,70,229,0.4)] border border-indigo-800/40"
                 />
+                {/* BUTTON LIHAT CV SAYA */}
+                <button
+                  onClick={() => setIsCvModalOpen(true)}
+                  className="relative z-10 mt-6 flex items-center gap-2 bg-indigo-600/80 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-lg shadow-indigo-600/30 hover:-translate-y-1 border border-indigo-400/50 backdrop-blur-sm"
+                >
+                  <FileText size={20} />
+                  Lihat CV Saya
+                </button>
               </div>
               <div>
                 <h2 className="text-purple-400 font-bold tracking-widest uppercase mb-2">Tentang Saya</h2>
@@ -397,8 +812,8 @@ export default function LandingPage() {
 
               {/* Phone Card */}
               <div className="relative group animate-fade-in-up" style={{ animationDelay: '0.35s' }}>
-                {/* Hover Preview Card - Uniform Size */}
-                <div className="absolute -top-[14rem] left-1/2 -translate-x-1/2 w-64 bg-slate-800/95 backdrop-blur rounded-2xl border border-indigo-700/50 shadow-[0_0_40px_rgba(79,70,229,0.3)] p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 pointer-events-none">
+                {/* Hover Preview Card */}
+                <div className="absolute -top-[12rem] left-1/2 -translate-x-1/2 w-64 bg-slate-800/95 backdrop-blur rounded-2xl border border-indigo-700/50 shadow-[0_0_40px_rgba(79,70,229,0.3)] p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 pointer-events-none">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-12 h-12 bg-indigo-900/40 rounded-full flex items-center justify-center text-purple-400">
                       <Phone size={24} />
@@ -427,8 +842,8 @@ export default function LandingPage() {
 
               {/* Email Card */}
               <div className="relative group animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-                {/* Hover Preview Card - Uniform Size */}
-                <div className="absolute -top-[14rem] left-1/2 -translate-x-1/2 w-64 bg-slate-800/95 backdrop-blur rounded-2xl border border-indigo-700/50 shadow-[0_0_40px_rgba(79,70,229,0.3)] p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 pointer-events-none">
+                {/* Hover Preview Card */}
+                <div className="absolute -top-[12rem] left-1/2 -translate-x-1/2 w-64 bg-slate-800/95 backdrop-blur rounded-2xl border border-indigo-700/50 shadow-[0_0_40px_rgba(79,70,229,0.3)] p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 pointer-events-none">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-12 h-12 bg-indigo-900/40 rounded-full flex items-center justify-center text-purple-400">
                       <Mail size={24} />
@@ -455,38 +870,133 @@ export default function LandingPage() {
                 </a>
               </div>
 
-              {/* Instagram Card */}
+              {/* Instagram Card - DENGAN PREVIEW GAMBAR REAL */}
               <div className="relative group animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
-                {/* Hover Preview Card - Uniform Size */}
-                <div className="absolute -top-[14rem] left-1/2 -translate-x-1/2 w-64 bg-slate-800/95 backdrop-blur rounded-2xl border border-indigo-700/50 shadow-[0_0_40px_rgba(79,70,229,0.3)] p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 pointer-events-none">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-500 rounded-full flex items-center justify-center text-white">
-                      <FaInstagram size={24} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-bold text-slate-100">@ntninzwgsla</p>
-                      <p className="text-xs text-slate-400">Natania Nazwa</p>
+                {/* Hover Preview Card - Instagram Screenshot Style */}
+                <div className="absolute -top-[28rem] left-1/2 -translate-x-1/2 w-80 bg-slate-900/95 backdrop-blur rounded-2xl border border-indigo-700/50 shadow-[0_0_50px_rgba(79,70,229,0.4)] p-0 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 pointer-events-none overflow-hidden">
+                  {/* Header Instagram dengan Foto Profil */}
+                  <div className="bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400 p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-16 h-16 rounded-full border-2 border-white/50 overflow-hidden bg-slate-800">
+                        <img 
+                          src="pp.jpg" 
+                          alt="Profile"
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.parentElement!.innerHTML = '<div class="w-full h-full flex items-center justify-center text-white"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg></div>';
+                          }}
+                        />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-sm font-bold text-white">ntninzwgsla</p>
+                        <p className="text-xs text-white/80">Natania Nazwa</p>
+                      </div>
                     </div>
                   </div>
-                  <div className="grid grid-cols-3 gap-2 mb-3">
+                  
+                  {/* Stats */}
+                  <div className="grid grid-cols-3 gap-2 p-4 border-b border-indigo-700/30">
                     <div className="text-center">
-                      <p className="text-sm font-bold text-slate-100">12</p>
+                      <p className="text-sm font-bold text-slate-100">6</p>
                       <p className="text-[10px] text-slate-400">posts</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-sm font-bold text-slate-100">245</p>
+                      <p className="text-sm font-bold text-slate-100">572</p>
                       <p className="text-[10px] text-slate-400">followers</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-sm font-bold text-slate-100">180</p>
+                      <p className="text-sm font-bold text-slate-100">245</p>
                       <p className="text-[10px] text-slate-400">following</p>
                     </div>
                   </div>
-                  <div className="bg-indigo-600 text-white text-xs font-bold py-2 rounded-lg text-center">
-                    Follow
+
+                  {/* Grid Foto Instagram (3 kolom) */}
+                  <div className="grid grid-cols-3 gap-0.5 p-4">
+                    <div className="aspect-square bg-slate-800 overflow-hidden">
+                      <img 
+                        src="p6.png" 
+                        alt="Post 1"
+                        className="w-full h-full object-cover hover:opacity-80 transition-opacity"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.parentElement!.classList.add('flex', 'items-center', 'justify-center');
+                          e.currentTarget.parentElement!.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>';
+                        }}
+                      />
+                    </div>
+                    <div className="aspect-square bg-slate-800 overflow-hidden">
+                      <img 
+                        src="p5.png" 
+                        alt="Post 2"
+                        className="w-full h-full object-cover hover:opacity-80 transition-opacity"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.parentElement!.classList.add('flex', 'items-center', 'justify-center');
+                          e.currentTarget.parentElement!.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>';
+                        }}
+                      />
+                    </div>
+                    <div className="aspect-square bg-slate-800 overflow-hidden">
+                      <img 
+                        src="p4.png" 
+                        alt="Post 3"
+                        className="w-full h-full object-cover hover:opacity-80 transition-opacity"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.parentElement!.classList.add('flex', 'items-center', 'justify-center');
+                          e.currentTarget.parentElement!.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>';
+                        }}
+                      />
+                    </div>
+                    <div className="aspect-square bg-slate-800 overflow-hidden">
+                      <img 
+                        src="p3.png" 
+                        alt="Post 4"
+                        className="w-full h-full object-cover hover:opacity-80 transition-opacity"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.parentElement!.classList.add('flex', 'items-center', 'justify-center');
+                          e.currentTarget.parentElement!.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>';
+                        }}
+                      />
+                    </div>
+                    <div className="aspect-square bg-slate-800 overflow-hidden">
+                      <img 
+                        src="p2.png" 
+                        alt="Post 5"
+                        className="w-full h-full object-cover hover:opacity-80 transition-opacity"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.parentElement!.classList.add('flex', 'items-center', 'justify-center');
+                          e.currentTarget.parentElement!.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>';
+                        }}
+                      />
+                    </div>
+                    <div className="aspect-square bg-slate-800 overflow-hidden">
+                      <img 
+                        src="p1.jpeg" 
+                        alt="Post 6"
+                        className="w-full h-full object-cover hover:opacity-80 transition-opacity"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.parentElement!.classList.add('flex', 'items-center', 'justify-center');
+                          e.currentTarget.parentElement!.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>';
+                        }}
+                      />
+                    </div>
                   </div>
-                  <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-800 border-r border-b border-indigo-700/50 rotate-45"></div>
+
+                  {/* CTA Button */}
+                  <div className="p-4 pt-0">
+                    <div className="bg-gradient-to-r from-purple-600 to-pink-500 text-white text-xs font-bold py-2.5 rounded-lg text-center">
+                      Lihat Profil Instagram
+                    </div>
+                  </div>
+
+                  <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-900 border-r border-b border-indigo-700/50 rotate-45"></div>
                 </div>
+                
                 <a
                   href={contactInstagram}
                   target="_blank"
@@ -501,24 +1011,70 @@ export default function LandingPage() {
                 </a>
               </div>
 
-              {/* School Card */}
+              {/* School Card - DENGAN PREVIEW GAMBAR REAL */}
               <div className="relative group animate-fade-in-up" style={{ animationDelay: '0.9s' }}>
-                {/* Hover Preview Card - Uniform Size */}
-                <div className="absolute -top-[14rem] left-1/2 -translate-x-1/2 w-64 bg-slate-800/95 backdrop-blur rounded-2xl border border-indigo-700/50 shadow-[0_0_40px_rgba(79,70,229,0.3)] p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 pointer-events-none">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-12 h-12 bg-indigo-900/40 rounded-full flex items-center justify-center text-purple-400">
-                      <School size={24} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-bold text-slate-100">SMKS PGRI WLINGI</p>
-                      <p className="text-xs text-slate-400">Rekayasa Perangkat Lunak</p>
+                {/* Hover Preview Card - School Photo Style */}
+                <div className="absolute -top-[24rem] left-1/2 -translate-x-1/2 w-80 bg-slate-900/95 backdrop-blur rounded-2xl border border-indigo-700/50 shadow-[0_0_50px_rgba(79,70,229,0.4)] p-0 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 pointer-events-none overflow-hidden">
+                  {/* Header dengan Foto Sekolah */}
+                  <div className="relative h-40 bg-indigo-600 overflow-hidden">
+                    <img 
+                      src="hammer.jpg" 
+                      alt="SMKS PGRI WLINGI"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        e.currentTarget.parentElement!.classList.add('flex', 'items-center', 'justify-center');
+                        e.currentTarget.parentElement!.innerHTML = '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"></path></svg>';
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent" />
+                    <div className="absolute bottom-3 left-4">
+                      <p className="text-sm font-bold text-white">SMKS PGRI WLINGI</p>
+                      <p className="text-xs text-white/80">Rekayasa Perangkat Lunak</p>
                     </div>
                   </div>
-                  <div className="bg-slate-900/50 rounded-lg p-3 text-center">
-                    <p className="text-xs text-slate-400">🏫 Klik untuk info sekolah</p>
+                  
+                  {/* School Info */}
+                  <div className="p-4 space-y-3">
+                    <div className="flex items-start gap-3 text-left">
+                      <MapPin size={16} className="text-purple-400 mt-0.5 shrink-0" />
+                      <div>
+                        <p className="text-xs text-slate-300 leading-relaxed">
+                          Jl. Panglima Sudirman No.86<br/>
+                          Beru, Kec. Wlingi<br/>
+                          Kabupaten Blitar, Jawa Timur 66184
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-3 text-left">
+                      <Phone size={16} className="text-purple-400 shrink-0" />
+                      <p className="text-xs text-slate-300">(0342) 691224</p>
+                    </div>
+
+                    <div className="flex items-center gap-3 text-left">
+                      <Mail size={16} className="text-purple-400 shrink-0" />
+                      <p className="text-xs text-slate-300">smkpgri_wlg@yahoo.co.id</p>
+                    </div>
+
+                    <div className="bg-slate-800/50 rounded-lg p-3 mt-2">
+                      <p className="text-[10px] text-slate-400 text-center">
+                        🏫 Sekolah Menengah Kejuruan Swasta<br/>
+                        Akreditasi: B (Baik) | Didirikan: 1987
+                      </p>
+                    </div>
                   </div>
-                  <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-800 border-r border-b border-indigo-700/50 rotate-45"></div>
+
+                  {/* CTA Button */}
+                  <div className="p-4 pt-0">
+                    <div className="bg-indigo-600 text-white text-xs font-bold py-2.5 rounded-lg text-center">
+                      Lihat Info Sekolah
+                    </div>
+                  </div>
+
+                  <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-900 border-r border-b border-indigo-700/50 rotate-45"></div>
                 </div>
+                
                 <a
                   href={contactSchoolSearch}
                   target="_blank"
@@ -548,6 +1104,61 @@ export default function LandingPage() {
           <p className="text-sm text-slate-400 text-center md:text-left">&copy; {new Date().getFullYear()} dibuat oleh Natania Nazwa Gisella Nasyahrani</p>
         </div>
       </footer>
+
+      {/* ==================== CV MODAL (LIGHT THEME) ==================== */}
+      {isCvModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto">
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity"
+            onClick={() => setIsCvModalOpen(false)}
+          />
+          
+          {/* Modal Content */}
+          <div className="relative z-10 w-full max-w-3xl mx-4 my-8 bg-white rounded-2xl border border-indigo-200 shadow-[0_0_60px_rgba(79,70,229,0.2)] overflow-hidden">
+            {/* Action Buttons Bar */}
+            <div className="sticky top-0 z-20 flex items-center justify-between px-6 py-3 bg-white/95 backdrop-blur-md border-b border-indigo-100">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={downloadPDF}
+                  disabled={isDownloading}
+                  className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all shadow-lg shadow-indigo-600/20"
+                >
+                  {isDownloading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Mengunduh...
+                    </>
+                  ) : (
+                    <>
+                      <Download size={16} />
+                      Unduh PDF
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={printCV}
+                  className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold transition-all border border-slate-200"
+                >
+                  <Printer size={16} />
+                  Cetak
+                </button>
+              </div>
+              <button
+                onClick={() => setIsCvModalOpen(false)}
+                className="p-2 bg-slate-100 hover:bg-slate-200 rounded-full text-slate-500 hover:text-slate-800 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* CV Content in Modal */}
+            <div className="p-8 md:p-12 bg-white">
+              <CVContent />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
