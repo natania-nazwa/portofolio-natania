@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:3000";
+const BASE_URL = "https://backend-portofolio-production-cd5b.up.railway.app";
 
 // Helper fetch dengan token
 const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
@@ -14,6 +14,15 @@ const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
 };
 
 // ── AUTH ──────────────────────────────────────────
+export const register = async (email: string, password: string, name?: string) => {
+  const res = await fetch(`${BASE_URL}/api/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password, name }),
+  });
+  return res.json();
+};
+
 export const login = async (email: string, password: string) => {
   const res = await fetch(`${BASE_URL}/api/auth/login`, {
     method: "POST",
@@ -52,7 +61,11 @@ export const updateSkill = async (id: string, data: object) => {
 
 export const deleteSkill = async (id: string) => {
   const res = await fetchWithAuth(`/api/skills/${id}`, { method: "DELETE" });
-  return res.json();
+  try {
+    return await res.json();
+  } catch {
+    return { success: false, message: `Delete failed with status ${res.status}` };
+  }
 };
 
 // ── PORTFOLIOS ────────────────────────────────────
@@ -79,7 +92,13 @@ export const updatePortfolio = async (id: string, data: object) => {
 
 export const deletePortfolio = async (id: string) => {
   const res = await fetchWithAuth(`/api/portofolio/${id}`, { method: "DELETE" });
-  return res.json();
+
+  // Supaya error 404 tidak “silent”, tampilkan response body jika ada
+  try {
+    return await res.json();
+  } catch {
+    return { success: false, message: `Delete failed with status ${res.status}` };
+  }
 };
 
 // ── CONTACT ───────────────────────────────────────

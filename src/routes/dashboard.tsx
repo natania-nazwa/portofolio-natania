@@ -167,17 +167,25 @@ export default function Dashboard() {
 
     try {
       if (isEditingPortfolio) {
-        await updatePortfolio(editPortfolioId as string, payload)
-        showToast('Karya berhasil diperbarui!', 'success')
+        const res = await updatePortfolio(editPortfolioId as string, payload)
+        if (res?.success) {
+          showToast('Karya berhasil diperbarui!', 'success')
+        } else {
+          showToast(res?.message || 'Gagal menyimpan karya', 'error')
+        }
         cancelEditPortfolioMode()
       } else {
-        await createPortfolio(payload)
-        showToast('Karya baru berhasil disimpan!', 'success')
-        resetFormPortfolio()
+        const res = await createPortfolio(payload)
+        if (res?.success) {
+          showToast('Karya baru berhasil disimpan!', 'success')
+          resetFormPortfolio()
+        } else {
+          showToast(res?.message || 'Gagal menyimpan karya', 'error')
+        }
       }
       await fetchPortfolios()
-    } catch {
-      showToast('Gagal menyimpan karya', 'error')
+    } catch (err: any) {
+      showToast(err?.message || 'Gagal menyimpan karya', 'error')
     }
   }
 
@@ -235,17 +243,25 @@ export default function Dashboard() {
 
     try {
       if (isEditingSkill) {
-        await updateSkill(editSkillId as string, payload)
-        showToast('Keahlian berhasil diperbarui!', 'success')
+        const res = await updateSkill(editSkillId as string, payload)
+        if (res?.success) {
+          showToast('Keahlian berhasil diperbarui!', 'success')
+        } else {
+          showToast(res?.message || 'Gagal menyimpan keahlian', 'error')
+        }
         cancelEditSkillMode()
       } else {
-        await createSkill(payload)
-        showToast('Keahlian baru berhasil disimpan!', 'success')
-        resetFormSkill()
+        const res = await createSkill(payload)
+        if (res?.success) {
+          showToast('Keahlian baru berhasil disimpan!', 'success')
+          resetFormSkill()
+        } else {
+          showToast(res?.message || 'Gagal menyimpan keahlian', 'error')
+        }
       }
       await fetchSkills()
-    } catch {
-      showToast('Gagal menyimpan keahlian', 'error')
+    } catch (err: any) {
+      showToast(err?.message || 'Gagal menyimpan keahlian', 'error')
     }
   }
 
@@ -282,21 +298,32 @@ export default function Dashboard() {
       if (!data) return
 
       if (itemToDelete.type === 'portfolio') {
-        await deletePortfolio(data.id as string)
+        const res = await deletePortfolio(data.id as string)
+        if (res?.success) {
+          showToast(`"${(data as any).judul}" telah dihapus`, 'success')
+        } else {
+          showToast(res?.message || `Gagal menghapus "${(data as any).judul}"`, 'error')
+        }
+
         if (isEditingPortfolio && editPortfolioId === data.id) cancelEditPortfolioMode()
         await fetchPortfolios()
-        showToast(`"${(data as any).judul}" telah dihapus`, 'error')
       } else if (itemToDelete.type === 'skill') {
-        await deleteSkill(data.id as string)
+        const res = await deleteSkill(data.id as string)
+        if (res?.success) {
+          showToast(`"${(data as any).judul}" telah dihapus`, 'success')
+        } else {
+          showToast(res?.message || `Gagal menghapus "${(data as any).judul}"`, 'error')
+        }
+
         if (isEditingSkill && editSkillId === data.id) cancelEditSkillMode()
         await fetchSkills()
-        showToast(`"${(data as any).judul}" telah dihapus`, 'error')
       }
     } finally {
       setShowDeleteModal(false)
       setItemToDelete({ type: '', data: null })
     }
   }
+
 
   // ==================== LOGIN / LOGOUT ====================
   const handleLoginSubmit = (e: React.FormEvent) => {

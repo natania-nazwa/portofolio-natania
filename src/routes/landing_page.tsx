@@ -148,6 +148,30 @@ export default function LandingPage() {
       observers.forEach((observer) => observer.disconnect())
     }
   }, [])
+
+  // ===== SCROLL REVEAL ANIMATION (BOTH DIRECTIONS) =====
+  useEffect(() => {
+    const observerOptions = {
+      root: null,
+      rootMargin: '-50px 0px -50px 0px',
+      threshold: 0.1,
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('reveal-visible')
+        } else {
+          entry.target.classList.remove('reveal-visible')
+        }
+      })
+    }, observerOptions)
+
+    const revealElements = document.querySelectorAll('.reveal')
+    revealElements.forEach((el) => observer.observe(el))
+
+    return () => observer.disconnect()
+  }, [showIntro])
   const goToLanding = () => setIsMobileMenuOpen(false)
 
   const contactMailto = 'mailto:nazwanasyahrani@gmail.com'
@@ -309,10 +333,9 @@ export default function LandingPage() {
     <div data-cv-content className="bg-white p-8 md:p-12" style={{ width: '210mm', maxWidth: '100%' }}>
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight mb-3">
-          NATANIA NAZWA
-          <span style={{ color: '#4f46e5' }}> GIS</span>ELLA NASYAHRANI
-        </h1>
+        <h5 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight mb-3">
+          NATANIA NAZWA GISELLA NASYAHRANI
+        </h5>
         <div className="flex flex-wrap items-center gap-2 text-sm" style={{ color: '#475569' }}>
           <span className="flex items-center gap-1">
             <GraduationCap size={14} style={{ color: '#4f46e5' }} />
@@ -369,7 +392,7 @@ export default function LandingPage() {
             <span className="min-w-[190px] font-medium" style={{ color: '#475569' }}>
               Tempat, Tanggal Lahir
             </span>
-            <span className="text-slate-900" style={{ color: '#1e293b' }}>: Blitar, 21 November 2008</span>
+            <span className="text-slate-900" style={{ color: '#1e293b' }}>: Blitar, 30 Mei 2009</span>
           </div>
 
           <div className="flex flex-wrap gap-x-2">
@@ -391,7 +414,7 @@ export default function LandingPage() {
               Alamat
             </span>
             <span className="text-slate-900" style={{ color: '#1e293b' }}>
-              : Dusun Betek, Desa Rejoso, Kec. Binangun, Kab. Blitar, Jawa Timur
+              : Dusun Kasim, Kec.Selopuro, Kab. Blitar, Jawa Timur
             </span>
           </div>
 
@@ -399,21 +422,21 @@ export default function LandingPage() {
             <span className="min-w-[190px] font-medium" style={{ color: '#475569' }}>
               No. HP / WhatsApp
             </span>
-            <span className="text-slate-900" style={{ color: '#1e293b' }}>: +62 856 0693 1277</span>
+            <span className="text-slate-900" style={{ color: '#1e293b' }}>: +62 813 3593 4870</span>
           </div>
 
           <div className="flex flex-wrap gap-x-2">
             <span className="min-w-[190px] font-medium" style={{ color: '#475569' }}>
               Email
             </span>
-            <span className="text-slate-900" style={{ color: '#1e293b' }}>: aur@gmail.com</span>
+            <span className="text-slate-900" style={{ color: '#1e293b' }}>: nazwanasyahrani@gmail.com</span>
           </div>
 
           <div className="flex flex-wrap gap-x-2">
             <span className="min-w-[190px] font-medium" style={{ color: '#475569' }}>
               Portofolio
             </span>
-            <span className="text-slate-900" style={{ color: '#1e293b' }}>: https://aur.github.io</span>
+            <span className="text-slate-900" style={{ color: '#1e293b' }}>: https://github.com/natania-nazwa</span>
           </div>
         </div>
       </div>
@@ -531,34 +554,67 @@ export default function LandingPage() {
   // ===== INTRO / SPLASH SCREEN =====
   if (showIntro) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-purple-950 font-sans text-slate-100 flex items-center justify-center overflow-hidden relative">
-        {/* Background decorative blobs - same as landing page */}
-        <div className="fixed top-[-10%] left-[-10%] w-96 h-96 bg-indigo-700 rounded-full mix-blend-multiply filter blur-[110px] opacity-20 z-0 animate-pulse" />
-        <div className="fixed top-[20%] right-[-5%] w-72 h-72 bg-purple-700 rounded-full mix-blend-multiply filter blur-[90px] opacity-15 z-0 animate-pulse" style={{ animationDelay: '2s' }} />
-        <div className="fixed bottom-[-10%] left-[20%] w-80 h-80 bg-purple-800 rounded-full mix-blend-multiply filter blur-[110px] opacity-10 z-0 animate-pulse" style={{ animationDelay: '4s' }} />
+      <div className="min-h-screen bg-slate-950 font-sans text-slate-100 flex items-center justify-center overflow-hidden relative">
+        {/* Animated gradient background */}
+        <div className="fixed inset-0 z-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-indigo-950/90 to-purple-950/80" />
+          {/* Animated color blobs */}
+          <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-indigo-600/20 rounded-full filter blur-[150px] animate-blob" />
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-600/15 rounded-full filter blur-[130px] animate-blob" style={{ animationDelay: '2s' }} />
+          <div className="absolute bottom-0 left-1/3 w-[550px] h-[550px] bg-violet-600/10 rounded-full filter blur-[140px] animate-blob" style={{ animationDelay: '4s' }} />
+          <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-fuchsia-600/10 rounded-full filter blur-[120px] animate-blob" style={{ animationDelay: '6s' }} />
+        </div>
 
-        {/* Floating particles using standard Tailwind */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(12)].map((_, i) => (
+        {/* Floating emojis */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">
+          {['💻', '⚡', '🚀', '✨', '💜', '🔮', '⚙️', '🌟'].map((emoji, i) => (
+            <span
+              key={i}
+              className="absolute text-2xl opacity-20 select-none animate-float-emoji"
+              style={{
+                left: `${5 + (i * 11) % 90}%`,
+                top: `${8 + (i * 17) % 80}%`,
+                animationDelay: `${i * 0.8}s`,
+                animationDuration: `${4 + (i % 3) * 2}s`,
+                fontSize: `${1 + (i % 3) * 0.3}rem`,
+              }}
+            >
+              {emoji}
+            </span>
+          ))}
+        </div>
+
+        {/* Floating particles */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">
+          {[...Array(20)].map((_, i) => (
             <div
               key={i}
-              className="absolute w-1.5 h-1.5 bg-purple-400/20 rounded-full animate-pulse"
+              className="absolute rounded-full animate-particle"
               style={{
-                left: `${10 + (i * 7.5) % 80}%`,
-                top: `${10 + (i * 13) % 70}%`,
-                animationDelay: `${i * 0.4}s`,
-                animationDuration: `${2 + (i % 3)}s`,
+                width: `${2 + (i % 3)}px`,
+                height: `${2 + (i % 3)}px`,
+                left: `${(i * 5.2) % 100}%`,
+                top: `${(i * 7.3) % 100}%`,
+                backgroundColor: i % 3 === 0 ? 'rgba(129, 140, 248, 0.4)' : i % 3 === 1 ? 'rgba(168, 85, 247, 0.3)' : 'rgba(99, 102, 241, 0.35)',
+                animationDelay: `${i * 0.25}s`,
+                animationDuration: `${3 + (i % 4)}s`,
               }}
             />
           ))}
         </div>
 
+        {/* Animated grid lines */}
+        <div className="absolute inset-0 z-[1] opacity-[0.03]" style={{
+          backgroundImage: 'linear-gradient(rgba(99,102,241,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(99,102,241,0.5) 1px, transparent 1px)',
+          backgroundSize: '60px 60px',
+        }} />
+
         {/* Main content */}
         <div className="relative z-10 text-center px-4">
-          {/* Logo */}
-          <div className="mb-8 flex items-center justify-center gap-3" style={{ animation: 'fadeInUp 1s ease-out' }}>
-            <div className="bg-indigo-600 p-3 rounded-xl text-white shadow-lg shadow-indigo-600/30">
-              <Code2 size={32} />
+          {/* Logo with glow */}
+          <div className="mb-10 flex items-center justify-center gap-3" style={{ animation: 'fadeInUp 1.2s ease-out forwards', opacity: 0 }}>
+            <div className="bg-indigo-600/90 p-3.5 rounded-2xl shadow-[0_0_40px_rgba(79,70,229,0.4)] backdrop-blur-sm">
+              <Code2 size={32} className="text-indigo-100" />
             </div>
             <span className="font-bold text-3xl text-indigo-300 tracking-tight">
               N9n<span className="text-purple-400">Port</span>
@@ -572,31 +628,58 @@ export default function LandingPage() {
                 {typedText}
               </span>
               <span 
-                className={`inline-block w-0.5 h-8 md:h-10 bg-purple-400 ml-1 transition-opacity duration-100 ${showCursor ? 'opacity-100' : 'opacity-0'}`}
+                className={`inline-block w-0.5 h-8 md:h-10 bg-purple-400/80 ml-1.5 transition-opacity duration-150 ${showCursor ? 'opacity-100' : 'opacity-0'}`}
               />
             </h1>
           </div>
 
-          {/* Loading hint */}
-          <p className="mt-8 text-slate-500 text-sm animate-pulse">
-            Memuat pengalaman...
+          {/* Loading hint with bouncing dots */}
+          <p className="mt-10 text-slate-500/80 text-sm tracking-wide">
+            <span className="inline-block animate-pulse">Memuat pengalaman</span>
+            <span className="inline-block animate-bounce-dot" style={{ animationDelay: '0.1s' }}>.</span>
+            <span className="inline-block animate-bounce-dot" style={{ animationDelay: '0.2s' }}>.</span>
+            <span className="inline-block animate-bounce-dot" style={{ animationDelay: '0.3s' }}>.</span>
           </p>
 
           {/* Progress bar */}
-          <div className="mt-6 mx-auto w-48 h-0.5 bg-slate-800/50 rounded-full overflow-hidden">
+          <div className="mt-8 mx-auto w-56 h-1 bg-slate-800/60 rounded-full overflow-hidden">
             <div 
-              className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-100 ease-out"
+              className="h-full bg-gradient-to-r from-indigo-500/80 via-purple-500/80 to-indigo-500/80 rounded-full transition-all duration-200 ease-out"
               style={{ width: `${(typedText.length / fullText.length) * 100}%` }}
             />
           </div>
         </div>
 
-        {/* Inline styles for fadeInUp animation */}
+        {/* Inline styles for animations */}
         <style>{`
           @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0); }
           }
+          @keyframes blob {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+          }
+          @keyframes float-emoji {
+            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.15; }
+            25% { transform: translateY(-20px) rotate(5deg); opacity: 0.25; }
+            50% { transform: translateY(-10px) rotate(-3deg); opacity: 0.2; }
+            75% { transform: translateY(-30px) rotate(8deg); opacity: 0.15; }
+          }
+          @keyframes particle {
+            0%, 100% { transform: translateY(0) scale(1); opacity: 0.3; }
+            50% { transform: translateY(-40px) scale(1.5); opacity: 0.6; }
+          }
+          @keyframes bounce-dot {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+          }
+          .animate-blob { animation: blob 7s infinite; }
+          .animate-float-emoji { animation: float-emoji 6s ease-in-out infinite; }
+          .animate-particle { animation: particle 4s ease-in-out infinite; }
+          .animate-bounce-dot { animation: bounce-dot 0.6s ease-in-out infinite; }
         `}</style>
       </div>
     )
@@ -605,11 +688,63 @@ export default function LandingPage() {
   // ===== MAIN LANDING PAGE =====
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-purple-950 font-sans text-slate-100 overflow-x-hidden relative" style={{ animation: 'fadeIn 0.6s ease-out' }}>
-      {/* Inline styles for fadeIn */}
+      {/* Inline styles for fadeIn and reveal animations */}
       <style>{`
         @keyframes fadeIn {
           from { opacity: 0; }
           to { opacity: 1; }
+        }
+        /* ===== SCROLL REVEAL ANIMATIONS (BIDIRECTIONAL) ===== */
+        .reveal {
+          opacity: 0;
+          transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1), 
+                      transform 0.7s cubic-bezier(0.4, 0, 0.2, 1),
+                      filter 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+          will-change: opacity, transform, filter;
+        }
+        .reveal-visible {
+          opacity: 1;
+          transform: translateY(0) scale(1) translateX(0) !important;
+        }
+        /* Fade Up */
+        .reveal-fade-up {
+          transform: translateY(50px);
+        }
+        .reveal-fade-up.reveal-visible {
+          transform: translateY(0);
+        }
+        /* Scale Up */
+        .reveal-scale-up {
+          transform: scale(0.85);
+        }
+        .reveal-scale-up.reveal-visible {
+          transform: scale(1);
+        }
+        /* Slide Left */
+        .reveal-slide-left {
+          transform: translateX(-40px);
+        }
+        .reveal-slide-left.reveal-visible {
+          transform: translateX(0);
+        }
+        /* Slide Right */
+        .reveal-slide-right {
+          transform: translateX(40px);
+        }
+        .reveal-slide-right.reveal-visible {
+          transform: translateX(0);
+        }
+        /* Fade In */
+        .reveal-fade {
+          transform: none;
+        }
+        /* Blur In */
+        .reveal-blur {
+          transform: none;
+          filter: blur(8px);
+        }
+        .reveal-blur.reveal-visible {
+          filter: blur(0);
         }
       `}</style>
       {/* Background dekoratif */}
@@ -735,7 +870,7 @@ export default function LandingPage() {
       <main className="relative z-10 pt-16">
         {/* HERO */}
         <section id="home" className="min-h-[90vh] flex items-center justify-center px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <div className="max-w-4xl mx-auto text-center space-y-6">
+          <div className="max-w-4xl mx-auto text-center space-y-6 reveal reveal-fade-up">
             <h4 className="text-5xl md:text-6xl font-extrabold text-slate-100 leading-tight">
               Natania Nazwa
               <br />
@@ -783,7 +918,7 @@ export default function LandingPage() {
         {/* TENTANG */}
         <section id="tentang" className="py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center reveal reveal-fade-up">
               <div className="relative flex justify-center flex-col items-center">
                 <div className="bg-indigo-900/400 w-80 h-[28rem] rounded-3xl rotate-3 opacity-15 absolute top-0 left-1/2 -translate-x-1/2" />
                 <img
@@ -840,17 +975,18 @@ export default function LandingPage() {
         {/* KEAHLIAN */}
         <section id="keahlian" className="py-20 bg-slate-900/60">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto mb-16">
+            <div className="text-center max-w-2xl mx-auto mb-16 reveal reveal-fade-up">
               <h2 className="text-sm font-bold text-purple-400 tracking-widest uppercase mb-2">Keahlian Saya</h2>
               <h3 className="text-3xl font-bold text-slate-100">Kemampuan yang Saya Miliki</h3>
             </div>
 
             {skills.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {skills.map((skill) => (
+                {skills.map((skill, idx) => (
                   <div
                     key={skill.id}
-                    className="group bg-slate-900/70 p-5 rounded-3xl border border-indigo-800/40 hover:shadow-lg transition-all hover:-translate-y-1 flex flex-col min-h-[280px]"
+                    className={`group bg-slate-900/70 p-5 rounded-3xl border border-indigo-800/40 hover:shadow-lg transition-all hover:-translate-y-1 flex flex-col min-h-[280px] reveal reveal-scale-up`}
+                    style={{ transitionDelay: `${idx * 100}ms` }}
                   >
                     <div className="bg-indigo-900/40 w-14 h-14 flex items-center justify-center rounded-2xl shadow-sm text-purple-400 mb-6 ring-1 ring-indigo-500/10 group-hover:ring-purple-400/20 transition-all">
                       <LayoutDashboard size={28} />
@@ -888,7 +1024,7 @@ export default function LandingPage() {
         {/* PORTOFOLIO */}
         <section id="portofolio" className="py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col md:flex-row justify-between items-end mb-12">
+            <div className="flex flex-col md:flex-row justify-between items-end mb-12 reveal reveal-fade-up">
               <div className="max-w-2xl">
                 <h2 className="text-sm font-bold text-purple-400 tracking-widest uppercase mb-2">Karya Saya</h2>
                 <h3 className="text-3xl font-bold text-slate-100">Portofolio & Proyek Terbaru</h3>
@@ -922,10 +1058,11 @@ export default function LandingPage() {
                 <p className="text-slate-500">Belum ada portofolio yang ditambahkan.</p>
               </div>
             ) : (
-                portfolios.map((item) => (
+                portfolios.map((item, idx) => (
                   <div
                     key={item.id}
-                    className="group bg-slate-900/70 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:shadow-indigo-900/50 border border-indigo-800/40 transition-all duration-300 flex flex-col hover:-translate-y-2"
+                    className={`group bg-slate-900/70 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:shadow-indigo-900/50 border border-indigo-800/40 transition-all duration-300 flex flex-col hover:-translate-y-2 reveal reveal-slide-left`}
+                    style={{ transitionDelay: `${idx * 150}ms` }}
                   >
                     <div className="relative h-56 overflow-hidden">
                       <img
@@ -936,9 +1073,9 @@ export default function LandingPage() {
                           e.currentTarget.src = 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=800'
                         }}
                       />
-                      <div className="absolute bottom-4 left-4 z-20 flex gap-2">
+<div className="absolute bottom-4 left-4 z-20 flex gap-2">
                         {item.tag.split(',').slice(0, 2).map((tech, idx) => (
-                          <span key={idx} className="px-2 py-1 bg-slate-900/80 backdrop-blur text-purple-400 text-xs font-bold rounded-md border border-indigo-800/40">
+                          <span key={idx} className="px-2.5 py-1 bg-slate-900/40 backdrop-blur-md text-white text-xs font-bold rounded-lg border border-white/20 shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
                             {tech.trim()}
                           </span>
                         ))}
@@ -947,7 +1084,7 @@ export default function LandingPage() {
 
                     <div className="p-6 flex-1 flex flex-col">
                       <h4 className="text-xl font-bold text-slate-100 mb-2 group-hover:text-purple-400 transition-colors">{item.judul}</h4>
-                      <p className="text-slate-400 text-sm mb-6 flex-1 line-clamp-3">{item.deskripsi}</p>
+<p className="text-slate-300 text-sm mb-6 flex-1">{item.deskripsi}</p>
                       <div className="pt-4 border-t border-indigo-800/40 flex justify-between items-center">
                         <a
                           href={item.github || '#'}
@@ -969,7 +1106,7 @@ export default function LandingPage() {
         {/* KONTAK */}
         <section id="kontak" className="py-20 bg-slate-900/60 border-t border-indigo-800/40">
           <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-700 opacity-10 rounded-full blur-3xl transform translate-x-1/3 -translate-y-1/3" />
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center reveal reveal-fade-up">
 
             {/* Animated Heading */}
             <div className="mb-4">
@@ -984,7 +1121,7 @@ export default function LandingPage() {
             </p>
 
             {/* Contact Info Cards - Centered with Hover Preview + Click */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-3xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-3xl mx-auto reveal reveal-fade-up">
 
               {/* Phone Card */}
               <div className="relative group animate-fade-in-up" style={{ animationDelay: '0.35s' }}>

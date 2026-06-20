@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 
-const API_URL = 'http://localhost:3000';
+const API_URL = "https://backend-portofolio-production-cd5b.up.railway.app";
 
 async function login(email: string, password: string) {
   try {
