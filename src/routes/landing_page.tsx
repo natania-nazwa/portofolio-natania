@@ -333,9 +333,9 @@ export default function LandingPage() {
     <div data-cv-content className="bg-white p-8 md:p-12" style={{ width: '210mm', maxWidth: '100%' }}>
       {/* Header */}
       <div className="mb-8">
-        <h5 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight mb-3 whitespace-nowrap">
+        <h3 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight mb-3 leading-snug">
           NATANIA NAZWA GISELLA NASYAHRANI
-        </h5>
+        </h3>
         <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm" style={{ color: '#475569' }}>
           <span className="flex items-center gap-1">
             <GraduationCap size={14} style={{ color: '#4f46e5' }} />
