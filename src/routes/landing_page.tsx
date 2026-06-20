@@ -554,15 +554,15 @@ export default function LandingPage() {
   // ===== INTRO / SPLASH SCREEN =====
   if (showIntro) {
     return (
-      <div className="min-h-screen bg-slate-950 font-sans text-slate-100 flex items-center justify-center overflow-hidden relative">
+      <div className="min-h-screen bg-slate-950 font-sans text-slate-100 flex items-center justify-center overflow-hidden relative px-4">
         {/* Animated gradient background */}
         <div className="fixed inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-indigo-950/90 to-purple-950/80" />
           {/* Animated color blobs */}
-          <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-indigo-600/20 rounded-full filter blur-[150px] animate-blob" />
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-600/15 rounded-full filter blur-[130px] animate-blob" style={{ animationDelay: '2s' }} />
-          <div className="absolute bottom-0 left-1/3 w-[550px] h-[550px] bg-violet-600/10 rounded-full filter blur-[140px] animate-blob" style={{ animationDelay: '4s' }} />
-          <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-fuchsia-600/10 rounded-full filter blur-[120px] animate-blob" style={{ animationDelay: '6s' }} />
+          <div className="absolute top-0 left-0 w-[300px] h-[300px] sm:w-[600px] sm:h-[600px] bg-indigo-600/20 rounded-full filter blur-[100px] sm:blur-[150px] animate-blob" />
+          <div className="absolute top-0 right-0 w-[250px] h-[250px] sm:w-[500px] sm:h-[500px] bg-purple-600/15 rounded-full filter blur-[80px] sm:blur-[130px] animate-blob" style={{ animationDelay: '2s' }} />
+          <div className="absolute bottom-0 left-1/3 w-[280px] h-[280px] sm:w-[550px] sm:h-[550px] bg-violet-600/10 rounded-full filter blur-[90px] sm:blur-[140px] animate-blob" style={{ animationDelay: '4s' }} />
+          <div className="absolute bottom-0 right-0 w-[200px] h-[200px] sm:w-[400px] sm:h-[400px] bg-fuchsia-600/10 rounded-full filter blur-[70px] sm:blur-[120px] animate-blob" style={{ animationDelay: '6s' }} />
         </div>
 
         {/* Floating emojis */}
@@ -570,13 +570,13 @@ export default function LandingPage() {
           {['💻', '⚡', '🚀', '✨', '💜', '🔮', '⚙️', '🌟'].map((emoji, i) => (
             <span
               key={i}
-              className="absolute text-2xl opacity-20 select-none animate-float-emoji"
+              className="absolute opacity-15 sm:opacity-20 select-none animate-float-emoji"
               style={{
                 left: `${5 + (i * 11) % 90}%`,
                 top: `${8 + (i * 17) % 80}%`,
                 animationDelay: `${i * 0.8}s`,
                 animationDuration: `${4 + (i % 3) * 2}s`,
-                fontSize: `${1 + (i % 3) * 0.3}rem`,
+                fontSize: `${0.8 + (i % 3) * 0.2}rem`,
               }}
             >
               {emoji}
@@ -586,17 +586,17 @@ export default function LandingPage() {
 
         {/* Floating particles */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">
-          {[...Array(20)].map((_, i) => (
+          {[...Array(12)].map((_, i) => (
             <div
               key={i}
               className="absolute rounded-full animate-particle"
               style={{
-                width: `${2 + (i % 3)}px`,
-                height: `${2 + (i % 3)}px`,
-                left: `${(i * 5.2) % 100}%`,
-                top: `${(i * 7.3) % 100}%`,
+                width: `${1 + (i % 2)}px`,
+                height: `${1 + (i % 2)}px`,
+                left: `${(i * 8.3) % 100}%`,
+                top: `${(i * 9.1) % 100}%`,
                 backgroundColor: i % 3 === 0 ? 'rgba(129, 140, 248, 0.4)' : i % 3 === 1 ? 'rgba(168, 85, 247, 0.3)' : 'rgba(99, 102, 241, 0.35)',
-                animationDelay: `${i * 0.25}s`,
+                animationDelay: `${i * 0.3}s`,
                 animationDuration: `${3 + (i % 4)}s`,
               }}
             />
@@ -610,31 +610,31 @@ export default function LandingPage() {
         }} />
 
         {/* Main content */}
-        <div className="relative z-10 text-center px-4">
+        <div className="relative z-10 text-center px-4 max-w-full">
           {/* Logo with glow */}
-          <div className="mb-10 flex items-center justify-center gap-3" style={{ animation: 'fadeInUp 1.2s ease-out forwards', opacity: 0 }}>
-            <div className="bg-indigo-600/90 p-3.5 rounded-2xl shadow-[0_0_40px_rgba(79,70,229,0.4)] backdrop-blur-sm">
-              <Code2 size={32} className="text-indigo-100" />
+          <div className="mb-6 sm:mb-10 flex items-center justify-center gap-3 px-4" style={{ animation: 'fadeInUp 1.2s ease-out forwards', opacity: 0 }}>
+            <div className="bg-indigo-600/90 p-2.5 sm:p-3.5 rounded-2xl shadow-[0_0_40px_rgba(79,70,229,0.4)] backdrop-blur-sm shrink-0">
+              <Code2 size={28} className="sm:w-8 sm:h-8 text-indigo-100" />
             </div>
-            <span className="font-bold text-3xl text-indigo-300 tracking-tight">
+            <span className="font-bold text-2xl sm:text-3xl text-indigo-300 tracking-tight drop-shadow-[0_2px_6px_rgba(79,70,229,0.4)]">
               N9n<span className="text-purple-400">Port</span>
             </span>
           </div>
 
           {/* Typing text with gradient */}
-          <div className="h-16 flex items-center justify-center">
-            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-indigo-300 to-purple-400">
+          <div className="h-16 sm:h-20 flex items-center justify-center px-4">
+            <h1 className="text-xl sm:text-3xl md:text-5xl font-extrabold tracking-tight text-center">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-indigo-300 to-purple-400 drop-shadow-[0_2px_8px_rgba(168,85,247,0.3)]">
                 {typedText}
               </span>
               <span 
-                className={`inline-block w-0.5 h-8 md:h-10 bg-purple-400/80 ml-1.5 transition-opacity duration-150 ${showCursor ? 'opacity-100' : 'opacity-0'}`}
+                className={`inline-block w-0.5 h-6 sm:h-8 md:h-10 bg-purple-400/80 ml-1.5 transition-opacity duration-150 ${showCursor ? 'opacity-100' : 'opacity-0'}`}
               />
             </h1>
           </div>
 
           {/* Loading hint with bouncing dots */}
-          <p className="mt-10 text-slate-500/80 text-sm tracking-wide">
+          <p className="mt-6 sm:mt-10 text-slate-500/80 text-xs sm:text-sm tracking-wide px-4">
             <span className="inline-block animate-pulse">Memuat pengalaman</span>
             <span className="inline-block animate-bounce-dot" style={{ animationDelay: '0.1s' }}>.</span>
             <span className="inline-block animate-bounce-dot" style={{ animationDelay: '0.2s' }}>.</span>
@@ -642,7 +642,7 @@ export default function LandingPage() {
           </p>
 
           {/* Progress bar */}
-          <div className="mt-8 mx-auto w-56 h-1 bg-slate-800/60 rounded-full overflow-hidden">
+          <div className="mt-6 sm:mt-8 mx-auto w-40 sm:w-56 h-1 bg-slate-800/60 rounded-full overflow-hidden">
             <div 
               className="h-full bg-gradient-to-r from-indigo-500/80 via-purple-500/80 to-indigo-500/80 rounded-full transition-all duration-200 ease-out"
               style={{ width: `${(typedText.length / fullText.length) * 100}%` }}
@@ -748,9 +748,9 @@ export default function LandingPage() {
         }
       `}</style>
       {/* Background dekoratif */}
-      <div className="fixed top-[-10%] left-[-10%] w-96 h-96 bg-indigo-700 rounded-full mix-blend-multiply filter blur-[110px] opacity-20 z-0 animate-pulse" />
-      <div className="fixed top-[20%] right-[-5%] w-72 h-72 bg-purple-700 rounded-full mix-blend-multiply filter blur-[90px] opacity-15 z-0 animate-pulse" style={{ animationDelay: '2s' }} />
-      <div className="fixed bottom-[-10%] left-[20%] w-80 h-80 bg-purple-800 rounded-full mix-blend-multiply filter blur-[110px] opacity-10 z-0 animate-pulse" style={{ animationDelay: '4s' }} />
+      <div className="fixed top-[-10%] left-[-10%] w-64 h-64 sm:w-96 sm:h-96 bg-indigo-700 rounded-full mix-blend-multiply filter blur-[80px] sm:blur-[110px] opacity-20 z-0 animate-pulse" />
+      <div className="fixed top-[20%] right-[-5%] w-48 h-48 sm:w-72 sm:h-72 bg-purple-700 rounded-full mix-blend-multiply filter blur-[60px] sm:blur-[90px] opacity-15 z-0 animate-pulse" style={{ animationDelay: '2s' }} />
+      <div className="fixed bottom-[-10%] left-[20%] w-52 h-52 sm:w-80 sm:h-80 bg-purple-800 rounded-full mix-blend-multiply filter blur-[70px] sm:blur-[110px] opacity-10 z-0 animate-pulse" style={{ animationDelay: '4s' }} />
 
       {/* ========== HIDDEN CV FOR PDF CAPTURE ========== */}
       <div
@@ -869,47 +869,47 @@ export default function LandingPage() {
       {/* MAIN */}
       <main className="relative z-10 pt-16">
         {/* HERO */}
-        <section id="home" className="min-h-[90vh] flex items-center justify-center px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <div className="max-w-4xl mx-auto text-center space-y-6 reveal reveal-fade-up">
-            <h4 className="text-5xl md:text-6xl font-extrabold text-slate-100 leading-tight">
-              Natania Nazwa
+        <section id="home" className="min-h-[90vh] flex items-center justify-center px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pt-8 sm:pt-0">
+          <div className="max-w-4xl mx-auto text-center space-y-4 sm:space-y-6 reveal reveal-fade-up relative z-10">
+            <h4 className="text-3xl sm:text-4xl md:text-6xl font-extrabold text-slate-100 leading-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
+              <span className="relative z-10">Natania Nazwa</span>
               <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-purple-600">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-600 drop-shadow-[0_2px_8px_rgba(168,85,247,0.3)]">
                 Gisella Nasyahrani
               </span>
             </h4>
-            <p className="text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-sm sm:text-base md:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed px-2 sm:px-0 drop-shadow-[0_1px_4px_rgba(0,0,0,0.4)]">
               Di era digital saat ini, dunia coding menjadi salah satu keterampilan penting yang terus berkembang. Sebagai siswa SMK jurusan Rekayasa Perangkat Lunak (RPL), proses belajar ini menjadi langkah awal untuk memahami bagaimana teknologi dibangun dan digunakan.
             </p>
-            <div className="flex flex-wrap justify-center gap-3 pt-4">
+            <div className="flex flex-wrap justify-center gap-3 pt-4 px-2">
               <a
                 href="#portofolio"
-                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-900/40 text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-lg shadow-indigo-600/30 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-900/40 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold transition-all shadow-lg shadow-indigo-600/30 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 text-sm sm:text-base"
               >
-                Lihat Karya Saya <ChevronRight size={20} />
+                Lihat Karya Saya <ChevronRight size={18} className="sm:w-5 sm:h-5" />
               </a>
               <a
                 href="#kontak"
-                className="flex items-center gap-2 bg-transparent border-2 border-purple-500/50 hover:border-purple-400 text-purple-400 px-6 py-3 rounded-xl font-semibold transition-all hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+                className="flex items-center gap-2 bg-transparent border-2 border-purple-500/50 hover:border-purple-400 text-purple-400 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold transition-all hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 text-sm sm:text-base"
               >
                 Hubungi Saya
               </a>
             </div>
 
-            <div className="flex justify-center gap-4 pt-6">
+            <div className="flex justify-center gap-4 pt-4 sm:pt-6">
               <a
                 href="https://github.com/natania-nazwa"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-3 bg-slate-900/70 rounded-full text-slate-400 hover:text-purple-400 hover:bg-indigo-900/40 shadow-sm border border-indigo-800/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+                className="p-2.5 sm:p-3 bg-slate-900/70 rounded-full text-slate-400 hover:text-purple-400 hover:bg-indigo-900/40 shadow-sm border border-indigo-800/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
               >
-                <FaGithub size={22} />
+                <FaGithub size={20} className="sm:w-[22px] sm:h-[22px]" />
               </a>
               <a
                 href={contactMailto}
-                className="p-3 bg-slate-900/70 rounded-full text-slate-400 hover:text-purple-400 hover:bg-indigo-900/40 shadow-sm border border-indigo-800/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+                className="p-2.5 sm:p-3 bg-slate-900/70 rounded-full text-slate-400 hover:text-purple-400 hover:bg-indigo-900/40 shadow-sm border border-indigo-800/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
               >
-                <Mail size={22} />
+                <Mail size={20} className="sm:w-[22px] sm:h-[22px]" />
               </a>
             </div>
           </div>
@@ -937,11 +937,11 @@ export default function LandingPage() {
               </div>
               <div>
                 <h2 className="text-purple-400 font-bold tracking-widest uppercase mb-2">Tentang Saya</h2>
-                <h3 className="text-4xl font-bold text-slate-100 mb-6">Halo!, Saya Natania</h3>
-                <p className="text-slate-400 text-lg leading-relaxed mb-6">
+                <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-100 mb-4 sm:mb-6">Halo!, Saya Natania</h3>
+                <p className="text-slate-300 text-sm sm:text-base md:text-lg leading-relaxed mb-4 sm:mb-6">
                   Saya adalah siswa SMKS PGRI WLINGI jurusan Rekayasa Perangkat Lunak (RPL) yang tertarik pada dunia coding untuk memahami pembuatan website dan aplikasi serta pemanfaatan teknologi dalam mempermudah kehidupan sehari-hari.
                 </p>
-                <p className="text-slate-400 text-lg leading-relaxed mb-6">
+                <p className="text-slate-300 text-sm sm:text-base md:text-lg leading-relaxed mb-4 sm:mb-6">
                   Melalui PKL di software house, saya ingin mendapatkan pengalaman langsung dari industri agar kemampuan saya dalam membuat website bisa semakin berkembang.
                 </p>
 
@@ -975,9 +975,9 @@ export default function LandingPage() {
         {/* KEAHLIAN */}
         <section id="keahlian" className="py-20 bg-slate-900/60">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto mb-16 reveal reveal-fade-up">
-              <h2 className="text-sm font-bold text-purple-400 tracking-widest uppercase mb-2">Keahlian Saya</h2>
-              <h3 className="text-3xl font-bold text-slate-100">Kemampuan yang Saya Miliki</h3>
+            <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-16 reveal reveal-fade-up px-4">
+              <h2 className="text-xs sm:text-sm font-bold text-purple-400 tracking-widest uppercase mb-2">Keahlian Saya</h2>
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-100">Kemampuan yang Saya Miliki</h3>
             </div>
 
             {skills.length > 0 ? (
@@ -1024,10 +1024,10 @@ export default function LandingPage() {
         {/* PORTOFOLIO */}
         <section id="portofolio" className="py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col md:flex-row justify-between items-end mb-12 reveal reveal-fade-up">
+            <div className="flex flex-col md:flex-row justify-between items-end mb-8 sm:mb-12 reveal reveal-fade-up px-4">
               <div className="max-w-2xl">
-                <h2 className="text-sm font-bold text-purple-400 tracking-widest uppercase mb-2">Karya Saya</h2>
-                <h3 className="text-3xl font-bold text-slate-100">Portofolio & Proyek Terbaru</h3>
+                <h2 className="text-xs sm:text-sm font-bold text-purple-400 tracking-widest uppercase mb-2">Karya Saya</h2>
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-100">Portofolio & Proyek Terbaru</h3>
               </div>
             </div>
 
@@ -1109,19 +1109,19 @@ export default function LandingPage() {
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center reveal reveal-fade-up">
 
             {/* Animated Heading */}
-            <div className="mb-4">
-              <h2 className="text-sm font-bold text-purple-400 tracking-widest uppercase mb-4 animate-pulse">Kontak</h2>
-              <h3 className="text-4xl md:text-5xl font-bold text-slate-100 mb-6 animate-fade-in-up">
+            <div className="mb-4 px-4">
+              <h2 className="text-xs sm:text-sm font-bold text-purple-400 tracking-widest uppercase mb-4 animate-pulse">Kontak</h2>
+              <h3 className="text-2xl sm:text-3xl md:text-5xl font-bold text-slate-100 mb-4 sm:mb-6 animate-fade-in-up">
                 Mari Berkolaborasi!
               </h3>
             </div>
 
-            <p className="text-slate-400 mb-16 text-lg leading-relaxed max-w-2xl mx-auto animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            <p className="text-slate-300 mb-10 sm:mb-16 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl mx-auto animate-fade-in-up px-4" style={{ animationDelay: '0.2s' }}>
               Portofolio ini berisi hasil pembelajaran dan proyek yang telah saya kerjakan. Mari terhubung dan berbagi wawasan seputar teknologi.
             </p>
 
             {/* Contact Info Cards - Centered with Hover Preview + Click */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-3xl mx-auto reveal reveal-fade-up">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 max-w-3xl mx-auto reveal reveal-fade-up px-4">
 
               {/* Phone Card */}
               <div className="relative group animate-fade-in-up" style={{ animationDelay: '0.35s' }}>
@@ -1143,13 +1143,13 @@ export default function LandingPage() {
                 </div>
                 <a
                   href={"tel:+6281335934870"}
-                  className="bg-slate-900/80 p-6 rounded-2xl border border-indigo-800/40 hover:shadow-lg hover:shadow-indigo-900/20 hover:-translate-y-1 transition-all duration-300 cursor-pointer block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+                  className="bg-slate-900/80 p-4 sm:p-6 rounded-2xl border border-indigo-800/40 hover:shadow-lg hover:shadow-indigo-900/20 hover:-translate-y-1 transition-all duration-300 cursor-pointer block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
                 >
-                  <div className="bg-indigo-900/40 w-14 h-14 flex items-center justify-center rounded-2xl mx-auto mb-4 text-purple-400 group-hover:scale-110 transition-transform">
-                    <Phone size={28} />
+                  <div className="bg-indigo-900/40 w-10 h-10 sm:w-14 sm:h-14 flex items-center justify-center rounded-2xl mx-auto mb-3 sm:mb-4 text-purple-400 group-hover:scale-110 transition-transform">
+                    <Phone size={22} className="sm:w-7 sm:h-7" />
                   </div>
-                  <p className="text-sm text-slate-500 font-medium mb-1">Telepon</p>
-                  <p className="text-slate-100 font-bold text-sm group-hover:text-purple-400 transition-colors">+62 813-3593-4870</p>
+                  <p className="text-xs sm:text-sm text-slate-500 font-medium mb-1">Telepon</p>
+                  <p className="text-slate-100 font-bold text-xs sm:text-sm group-hover:text-purple-400 transition-colors">+62 813-3593-4870</p>
                 </a>
               </div>
 
@@ -1173,13 +1173,13 @@ export default function LandingPage() {
                 </div>
                 <a
                   href={contactMailto}
-                  className="bg-slate-900/80 p-6 rounded-2xl border border-indigo-800/40 hover:shadow-lg hover:shadow-indigo-900/20 hover:-translate-y-1 transition-all duration-300 cursor-pointer block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+                  className="bg-slate-900/80 p-4 sm:p-6 rounded-2xl border border-indigo-800/40 hover:shadow-lg hover:shadow-indigo-900/20 hover:-translate-y-1 transition-all duration-300 cursor-pointer block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
                 >
-                  <div className="bg-indigo-900/40 w-14 h-14 flex items-center justify-center rounded-2xl mx-auto mb-4 text-purple-400 group-hover:scale-110 transition-transform">
-                    <Mail size={28} />
+                  <div className="bg-indigo-900/40 w-10 h-10 sm:w-14 sm:h-14 flex items-center justify-center rounded-2xl mx-auto mb-3 sm:mb-4 text-purple-400 group-hover:scale-110 transition-transform">
+                    <Mail size={22} className="sm:w-7 sm:h-7" />
                   </div>
-                  <p className="text-sm text-slate-500 font-medium mb-1">Email</p>
-                  <p className="text-slate-100 font-bold text-sm break-all group-hover:text-purple-400 transition-colors">nazwanasyahrani@gmail.com</p>
+                  <p className="text-xs sm:text-sm text-slate-500 font-medium mb-1">Email</p>
+                  <p className="text-slate-100 font-bold text-xs sm:text-sm break-all group-hover:text-purple-400 transition-colors">nazwanasyahrani@gmail.com</p>
                 </a>
               </div>
 
@@ -1314,13 +1314,13 @@ export default function LandingPage() {
                   href={contactInstagram}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-slate-900/80 p-6 rounded-2xl border border-indigo-800/40 hover:shadow-lg hover:shadow-indigo-900/20 hover:-translate-y-1 transition-all duration-300 cursor-pointer block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+                  className="bg-slate-900/80 p-4 sm:p-6 rounded-2xl border border-indigo-800/40 hover:shadow-lg hover:shadow-indigo-900/20 hover:-translate-y-1 transition-all duration-300 cursor-pointer block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
                 >
-                  <div className="bg-indigo-900/40 w-14 h-14 flex items-center justify-center rounded-2xl mx-auto mb-4 text-purple-400 group-hover:scale-110 transition-transform">
-                    <FaInstagram size={28} />
+                  <div className="bg-indigo-900/40 w-10 h-10 sm:w-14 sm:h-14 flex items-center justify-center rounded-2xl mx-auto mb-3 sm:mb-4 text-purple-400 group-hover:scale-110 transition-transform">
+                    <FaInstagram size={22} className="sm:w-7 sm:h-7" />
                   </div>
-                  <p className="text-sm text-slate-500 font-medium mb-1">Instagram</p>
-                  <p className="text-slate-100 font-bold text-lg group-hover:text-purple-400 transition-colors">@ntninzwgsla</p>
+                  <p className="text-xs sm:text-sm text-slate-500 font-medium mb-1">Instagram</p>
+                  <p className="text-slate-100 font-bold text-sm sm:text-lg group-hover:text-purple-400 transition-colors">@ntninzwgsla</p>
                 </a>
               </div>
 
@@ -1392,13 +1392,13 @@ export default function LandingPage() {
                   href={contactSchoolSearch}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-slate-900/80 p-6 rounded-2xl border border-indigo-800/40 hover:shadow-lg hover:shadow-indigo-900/20 hover:-translate-y-1 transition-all duration-300 cursor-pointer block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+                  className="bg-slate-900/80 p-4 sm:p-6 rounded-2xl border border-indigo-800/40 hover:shadow-lg hover:shadow-indigo-900/20 hover:-translate-y-1 transition-all duration-300 cursor-pointer block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
                 >
-                  <div className="bg-indigo-900/40 w-14 h-14 flex items-center justify-center rounded-2xl mx-auto mb-4 text-purple-400 group-hover:scale-110 transition-transform">
-                    <School size={28} />
+                  <div className="bg-indigo-900/40 w-10 h-10 sm:w-14 sm:h-14 flex items-center justify-center rounded-2xl mx-auto mb-3 sm:mb-4 text-purple-400 group-hover:scale-110 transition-transform">
+                    <School size={22} className="sm:w-7 sm:h-7" />
                   </div>
-                  <p className="text-sm text-slate-500 font-medium mb-1">Sekolah</p>
-                  <p className="text-slate-100 font-bold text-lg group-hover:text-purple-400 transition-colors">SMKS PGRI WLINGI</p>
+                  <p className="text-xs sm:text-sm text-slate-500 font-medium mb-1">Sekolah</p>
+                  <p className="text-slate-100 font-bold text-sm sm:text-lg group-hover:text-purple-400 transition-colors">SMKS PGRI WLINGI</p>
                 </a>
               </div>
             </div>
