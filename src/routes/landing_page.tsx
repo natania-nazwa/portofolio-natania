@@ -53,6 +53,42 @@ export default function LandingPage() {
   const [isLoadingPortfolios, setIsLoadingPortfolios] = useState(true)
   const [isCvModalOpen, setIsCvModalOpen] = useState(false)
   const [isDownloading, setIsDownloading] = useState(false)
+
+  // ===== INTRO / SPLASH SCREEN STATES =====
+  const [showIntro, setShowIntro] = useState(true)
+  const [typedText, setTypedText] = useState('')
+  const [showCursor, setShowCursor] = useState(true)
+  const fullText = 'Selamat Datang di N9nPort'
+
+  // Typing animation effect
+  useEffect(() => {
+    if (!showIntro) return
+
+    let currentIndex = 0
+    const typingInterval = setInterval(() => {
+      if (currentIndex <= fullText.length) {
+        setTypedText(fullText.slice(0, currentIndex))
+        currentIndex++
+      } else {
+        clearInterval(typingInterval)
+        // Wait 1.5s after typing finishes, then show landing page
+        setTimeout(() => {
+          setShowIntro(false)
+        }, 1500)
+      }
+    }, 100)
+
+    return () => clearInterval(typingInterval)
+  }, [showIntro])
+
+  // Cursor blink effect
+  useEffect(() => {
+    if (!showIntro) return
+    const cursorInterval = setInterval(() => {
+      setShowCursor(prev => !prev)
+    }, 530)
+    return () => clearInterval(cursorInterval)
+  }, [showIntro])
   
   // State untuk melacak menu yang aktif
   const [activeMenu, setActiveMenu] = useState<string>('home')
@@ -492,8 +528,90 @@ export default function LandingPage() {
     </div>
   )
 
+  // ===== INTRO / SPLASH SCREEN =====
+  if (showIntro) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-purple-950 font-sans text-slate-100 flex items-center justify-center overflow-hidden relative">
+        {/* Background decorative blobs - same as landing page */}
+        <div className="fixed top-[-10%] left-[-10%] w-96 h-96 bg-indigo-700 rounded-full mix-blend-multiply filter blur-[110px] opacity-20 z-0 animate-pulse" />
+        <div className="fixed top-[20%] right-[-5%] w-72 h-72 bg-purple-700 rounded-full mix-blend-multiply filter blur-[90px] opacity-15 z-0 animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="fixed bottom-[-10%] left-[20%] w-80 h-80 bg-purple-800 rounded-full mix-blend-multiply filter blur-[110px] opacity-10 z-0 animate-pulse" style={{ animationDelay: '4s' }} />
+
+        {/* Floating particles using standard Tailwind */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {[...Array(12)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-1.5 h-1.5 bg-purple-400/20 rounded-full animate-pulse"
+              style={{
+                left: `${10 + (i * 7.5) % 80}%`,
+                top: `${10 + (i * 13) % 70}%`,
+                animationDelay: `${i * 0.4}s`,
+                animationDuration: `${2 + (i % 3)}s`,
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Main content */}
+        <div className="relative z-10 text-center px-4">
+          {/* Logo */}
+          <div className="mb-8 flex items-center justify-center gap-3" style={{ animation: 'fadeInUp 1s ease-out' }}>
+            <div className="bg-indigo-600 p-3 rounded-xl text-white shadow-lg shadow-indigo-600/30">
+              <Code2 size={32} />
+            </div>
+            <span className="font-bold text-3xl text-indigo-300 tracking-tight">
+              N9n<span className="text-purple-400">Port</span>
+            </span>
+          </div>
+
+          {/* Typing text with gradient */}
+          <div className="h-16 flex items-center justify-center">
+            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-indigo-300 to-purple-400">
+                {typedText}
+              </span>
+              <span 
+                className={`inline-block w-0.5 h-8 md:h-10 bg-purple-400 ml-1 transition-opacity duration-100 ${showCursor ? 'opacity-100' : 'opacity-0'}`}
+              />
+            </h1>
+          </div>
+
+          {/* Loading hint */}
+          <p className="mt-8 text-slate-500 text-sm animate-pulse">
+            Memuat pengalaman...
+          </p>
+
+          {/* Progress bar */}
+          <div className="mt-6 mx-auto w-48 h-0.5 bg-slate-800/50 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-100 ease-out"
+              style={{ width: `${(typedText.length / fullText.length) * 100}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Inline styles for fadeInUp animation */}
+        <style>{`
+          @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+        `}</style>
+      </div>
+    )
+  }
+
+  // ===== MAIN LANDING PAGE =====
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-purple-950 font-sans text-slate-100 overflow-x-hidden relative">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-purple-950 font-sans text-slate-100 overflow-x-hidden relative" style={{ animation: 'fadeIn 0.6s ease-out' }}>
+      {/* Inline styles for fadeIn */}
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+      `}</style>
       {/* Background dekoratif */}
       <div className="fixed top-[-10%] left-[-10%] w-96 h-96 bg-indigo-700 rounded-full mix-blend-multiply filter blur-[110px] opacity-20 z-0 animate-pulse" />
       <div className="fixed top-[20%] right-[-5%] w-72 h-72 bg-purple-700 rounded-full mix-blend-multiply filter blur-[90px] opacity-15 z-0 animate-pulse" style={{ animationDelay: '2s' }} />
