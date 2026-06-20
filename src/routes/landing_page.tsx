@@ -333,10 +333,10 @@ export default function LandingPage() {
     <div data-cv-content className="bg-white p-8 md:p-12" style={{ width: '210mm', maxWidth: '100%' }}>
       {/* Header */}
       <div className="mb-8">
-        <h5 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight mb-3">
+        <h5 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight mb-3 whitespace-nowrap">
           NATANIA NAZWA GISELLA NASYAHRANI
         </h5>
-        <div className="flex flex-wrap items-center gap-2 text-sm" style={{ color: '#475569' }}>
+        <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm" style={{ color: '#475569' }}>
           <span className="flex items-center gap-1">
             <GraduationCap size={14} style={{ color: '#4f46e5' }} />
             Siswi SMK Kelas XI
@@ -349,7 +349,7 @@ export default function LandingPage() {
             SMK PGRI Wlingi, Blitar
           </span>
         </div>
-        <div className="mt-3 flex flex-wrap items-center gap-3 text-xs" style={{ color: '#64748b' }}>
+        <div className="mt-3 flex flex-wrap items-center gap-2 sm:gap-3 text-xs" style={{ color: '#64748b' }}>
           <span className="flex items-center gap-1">
             <Phone size={12} />
             +62 813-3593-4870
@@ -703,22 +703,23 @@ export default function LandingPage() {
         .animate-gradient-text {
           background: linear-gradient(
             90deg,
-            #818cf8 0%,
-            #a78bfa 15%,
-            #c084fc 30%,
-            #e879f9 45%,
-            #c084fc 60%,
-            #a78bfa 75%,
-            #818cf8 90%,
-            #818cf8 100%
+            #ffffff 0%,
+            #e0e7ff 10%,
+            #818cf8 20%,
+            #a78bfa 35%,
+            #c084fc 50%,
+            #e879f9 65%,
+            #c084fc 80%,
+            #a78bfa 90%,
+            #ffffff 100%
           );
-          background-size: 300% 100%;
+          background-size: 400% 100%;
           -webkit-background-clip: text;
           background-clip: text;
           -webkit-text-fill-color: transparent;
           color: transparent;
-          animation: gradient-shift 4s ease infinite;
-          filter: drop-shadow(0 2px 10px rgba(129, 140, 248, 0.3));
+          animation: gradient-shift 5s ease infinite;
+          filter: drop-shadow(0 2px 12px rgba(168, 85, 247, 0.4));
         }
         /* ===== SCROLL REVEAL ANIMATIONS (BIDIRECTIONAL) ===== */
         .reveal {
