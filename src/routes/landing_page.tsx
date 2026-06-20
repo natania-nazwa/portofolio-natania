@@ -53,6 +53,9 @@ export default function LandingPage() {
   const [isLoadingPortfolios, setIsLoadingPortfolios] = useState(true)
   const [isCvModalOpen, setIsCvModalOpen] = useState(false)
   const [isDownloading, setIsDownloading] = useState(false)
+  
+  // State untuk melacak menu yang aktif
+  const [activeMenu, setActiveMenu] = useState<string>('home')
 
   const cvRef = useRef<HTMLDivElement>(null)
 
@@ -82,6 +85,33 @@ export default function LandingPage() {
     }
   }, [isCvModalOpen])
 
+  // Intersection Observer untuk auto-detect section aktif saat scroll
+  useEffect(() => {
+    const sections = ['home', 'tentang', 'keahlian', 'portofolio', 'kontak']
+    const observers: IntersectionObserver[] = []
+
+    sections.forEach((sectionId) => {
+      const element = document.getElementById(sectionId)
+      if (element) {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                setActiveMenu(sectionId)
+              }
+            })
+          },
+          { threshold: 0.3 }
+        )
+        observer.observe(element)
+        observers.push(observer)
+      }
+    })
+
+    return () => {
+      observers.forEach((observer) => observer.disconnect())
+    }
+  }, [])
   const goToLanding = () => setIsMobileMenuOpen(false)
 
   const contactMailto = 'mailto:nazwanasyahrani@gmail.com'
@@ -297,37 +327,61 @@ export default function LandingPage() {
         <h2 className="text-sm font-bold tracking-widest uppercase mb-3 pb-2" style={{ color: '#4f46e5', borderBottom: '2px solid #e0e7ff' }}>
           Data Diri
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 text-sm">
-          <div className="flex">
-            <span className="w-40 font-medium" style={{ color: '#475569' }}>Tempat, Tanggal Lahir</span>
-            <span style={{ color: '#1e293b' }}>: Blitar, 21 November 2008</span>
+
+        <div className="space-y-3 text-sm">
+          <div className="flex flex-wrap gap-x-2">
+            <span className="min-w-[190px] font-medium" style={{ color: '#475569' }}>
+              Tempat, Tanggal Lahir
+            </span>
+            <span className="text-slate-900" style={{ color: '#1e293b' }}>: Blitar, 21 November 2008</span>
           </div>
-          <div className="flex">
-            <span className="w-40 font-medium" style={{ color: '#475569' }}>Jenis Kelamin</span>
-            <span style={{ color: '#1e293b' }}>: Perempuan</span>
+
+          <div className="flex flex-wrap gap-x-2">
+            <span className="min-w-[190px] font-medium" style={{ color: '#475569' }}>
+              Jenis Kelamin
+            </span>
+            <span className="text-slate-900" style={{ color: '#1e293b' }}>: Perempuan</span>
           </div>
-          <div className="flex">
-            <span className="w-40 font-medium" style={{ color: '#475569' }}>Kewarganegaraan</span>
-            <span style={{ color: '#1e293b' }}>: Indonesia</span>
+
+          <div className="flex flex-wrap gap-x-2">
+            <span className="min-w-[190px] font-medium" style={{ color: '#475569' }}>
+              Kewarganegaraan
+            </span>
+            <span className="text-slate-900" style={{ color: '#1e293b' }}>: Indonesia</span>
           </div>
-          <div className="flex">
-            <span className="w-40 font-medium" style={{ color: '#475569' }}>Alamat</span>
-            <span style={{ color: '#1e293b' }}>: Blitar, Jawa Timur</span>
+
+          <div className="flex flex-wrap gap-x-2">
+            <span className="min-w-[190px] font-medium" style={{ color: '#475569' }}>
+              Alamat
+            </span>
+            <span className="text-slate-900" style={{ color: '#1e293b' }}>
+              : Dusun Betek, Desa Rejoso, Kec. Binangun, Kab. Blitar, Jawa Timur
+            </span>
           </div>
-          <div className="flex">
-            <span className="w-40 font-medium" style={{ color: '#475569' }}>No. HP / WhatsApp</span>
-            <span style={{ color: '#1e293b' }}>: +62 813-3593-4870</span>
+
+          <div className="flex flex-wrap gap-x-2">
+            <span className="min-w-[190px] font-medium" style={{ color: '#475569' }}>
+              No. HP / WhatsApp
+            </span>
+            <span className="text-slate-900" style={{ color: '#1e293b' }}>: +62 856 0693 1277</span>
           </div>
-          <div className="flex">
-            <span className="w-40 font-medium" style={{ color: '#475569' }}>Email</span>
-            <span style={{ color: '#1e293b' }}>: nazwanasyahrani@gmail.com</span>
+
+          <div className="flex flex-wrap gap-x-2">
+            <span className="min-w-[190px] font-medium" style={{ color: '#475569' }}>
+              Email
+            </span>
+            <span className="text-slate-900" style={{ color: '#1e293b' }}>: aur@gmail.com</span>
           </div>
-          <div className="flex">
-            <span className="w-40 font-medium" style={{ color: '#475569' }}>Portofolio</span>
-            <span style={{ color: '#1e293b' }}>: https://natania-nazwa.github.io</span>
+
+          <div className="flex flex-wrap gap-x-2">
+            <span className="min-w-[190px] font-medium" style={{ color: '#475569' }}>
+              Portofolio
+            </span>
+            <span className="text-slate-900" style={{ color: '#1e293b' }}>: https://aur.github.io</span>
           </div>
         </div>
       </div>
+
 
       {/* PENDIDIKAN */}
       <div className="mb-8">
@@ -352,112 +406,89 @@ export default function LandingPage() {
         <h2 className="text-sm font-bold tracking-widest uppercase mb-3 pb-2" style={{ color: '#4f46e5', borderBottom: '2px solid #e0e7ff' }}>
           Kompetensi Teknis
         </h2>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Kolom 1: Bahasa & Database */}
           <div className="rounded-xl p-4 border" style={{ backgroundColor: '#eef2ff', borderColor: '#e0e7ff' }}>
             <h3 className="text-xs font-bold uppercase mb-3" style={{ color: '#4338ca' }}>Bahasa & Database</h3>
             <ul className="space-y-2 text-sm" style={{ color: '#334155' }}>
-              <li className="flex items-center gap-2">
-                <Code2 size={14} style={{ color: '#6366f1' }} />
-                HTML
-              </li>
-              <li className="flex items-center gap-2">
-                <Code2 size={14} style={{ color: '#6366f1' }} />
-                CSS
-              </li>
-              <li className="flex items-center gap-2">
-                <Code2 size={14} style={{ color: '#6366f1' }} />
-                JavaScript
-              </li>
-              <li className="flex items-center gap-2">
-                <Code2 size={14} style={{ color: '#6366f1' }} />
-                MySQL
-              </li>
+              {(skills
+                .flatMap((s) => s.tag.split(',').map((t) => t.trim()))
+                .filter((t) => t && ['HTML5', 'CSS3', 'JavaScript', 'PHP', 'React.js'].includes(t)).slice(0, 4)
+              ).map((t, idx) => (
+                <li key={idx} className="flex items-center gap-2">
+                  <Code2 size={14} style={{ color: '#6366f1' }} />
+                  {t}
+                </li>
+              ))}
             </ul>
           </div>
+
+          {/* Kolom 2: Framework & Tools */}
           <div className="rounded-xl p-4 border" style={{ backgroundColor: '#eef2ff', borderColor: '#e0e7ff' }}>
             <h3 className="text-xs font-bold uppercase mb-3" style={{ color: '#4338ca' }}>Framework & Tools</h3>
             <ul className="space-y-2 text-sm" style={{ color: '#334155' }}>
-              <li className="flex items-center gap-2">
-                <LayoutDashboard size={14} style={{ color: '#6366f1' }} />
-                React
-              </li>
-              <li className="flex items-center gap-2">
-                <LayoutDashboard size={14} style={{ color: '#6366f1' }} />
-                Tailwind CSS
-              </li>
-              <li className="flex items-center gap-2">
-                <LayoutDashboard size={14} style={{ color: '#6366f1' }} />
-                Git & GitHub
-              </li>
-              <li className="flex items-center gap-2">
-                <LayoutDashboard size={14} style={{ color: '#6366f1' }} />
-                VS Code
-              </li>
+              {(skills
+                .flatMap((s) => s.tag.split(',').map((t) => t.trim()))
+                .filter((t) => t && ['React.js', 'Laravel'].includes(t)).slice(0, 4)
+              ).map((t, idx) => (
+                <li key={idx} className="flex items-center gap-2">
+                  <LayoutDashboard size={14} style={{ color: '#6366f1' }} />
+                  {t}
+                </li>
+              ))}
             </ul>
           </div>
+
+          {/* Kolom 3: Soft Skills */}
           <div className="rounded-xl p-4 border" style={{ backgroundColor: '#eef2ff', borderColor: '#e0e7ff' }}>
             <h3 className="text-xs font-bold uppercase mb-3" style={{ color: '#4338ca' }}>Soft Skills</h3>
             <ul className="space-y-2 text-sm" style={{ color: '#334155' }}>
-              <li className="flex items-center gap-2">
-                <Award size={14} style={{ color: '#6366f1' }} />
-                Gigih & Berorientasi Target
-              </li>
-              <li className="flex items-center gap-2">
-                <Award size={14} style={{ color: '#6366f1' }} />
-                Bertanggung Jawab
-              </li>
-              <li className="flex items-center gap-2">
-                <Award size={14} style={{ color: '#6366f1' }} />
-                Kerja Tim & Komunikasi
-              </li>
-              <li className="flex items-center gap-2">
-                <Award size={14} style={{ color: '#6366f1' }} />
-                Problem Solving
-              </li>
+              {/* Jika tidak ada tag soft skill, tetap aman tampil kosong (tanpa ubah struktur) */}
+              {(skills
+                .flatMap((s) => s.tag.split(',').map((t) => t.trim()))
+                .filter((t) => t && ['Bootstrap'].includes(t)).slice(0, 4)
+              ).map((t, idx) => (
+                <li key={idx} className="flex items-center gap-2">
+                  <Award size={14} style={{ color: '#6366f1' }} />
+                  {t}
+                </li>
+              ))}
             </ul>
           </div>
         </div>
       </div>
 
-      {/* ORGANISASI */}
-      <div className="mb-8">
-        <h2 className="text-sm font-bold tracking-widest uppercase mb-3 pb-2" style={{ color: '#4f46e5', borderBottom: '2px solid #e0e7ff' }}>
-          Organisasi
-        </h2>
-        <div className="space-y-4">
-          <div>
-            <div className="flex flex-wrap items-center gap-2 mb-2">
-              <span className="font-bold text-sm" style={{ color: '#0f172a' }}>OSIS SMK PGRI Wlingi</span>
-              <span className="text-sm font-medium" style={{ color: '#4f46e5' }}>| Anggota Aktif</span>
-              <span className="text-sm" style={{ color: '#94a3b8' }}>| 2024 – Sekarang</span>
-            </div>
-            <ul className="list-disc list-inside text-sm space-y-1 ml-2" style={{ color: '#475569' }}>
-              <li>Aktif berpartisipasi dalam kegiatan organisasi sekolah</li>
-              <li>Berkolaborasi dengan anggota lain dalam pelaksanaan program kerja</li>
-            </ul>
-          </div>
-        </div>
-      </div>
 
       {/* PROYEK */}
       <div className="mb-4">
         <h2 className="text-sm font-bold tracking-widest uppercase mb-3 pb-2" style={{ color: '#4f46e5', borderBottom: '2px solid #e0e7ff' }}>
           Proyek
         </h2>
+
         <div className="space-y-4">
-          <div>
-            <div className="flex flex-wrap items-center gap-2 mb-2">
-              <span className="font-bold text-sm" style={{ color: '#0f172a' }}>N9nPort Portfolio Website</span>
-              <span className="text-sm font-medium" style={{ color: '#4f46e5' }}>| Personal Project</span>
-              <span className="text-sm" style={{ color: '#94a3b8' }}>| 2025</span>
+          {portfolios.length > 0 ? (
+            portfolios.slice(0, 3).map((item, idx) => (
+              <div key={item.id}>
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  <span className="font-bold text-sm" style={{ color: '#0f172a' }}>
+                    {idx + 1}. {item.judul}
+                  </span>
+                </div>
+                <p className="text-sm leading-relaxed" style={{ color: '#475569' }}>{item.deskripsi}</p>
+              </div>
+            ))
+          ) : (
+
+            <div>
+              <p className="text-sm" style={{ color: '#475569' }}>
+                Belum ada proyek.
+              </p>
             </div>
-            <ul className="list-disc list-inside text-sm space-y-1 ml-2" style={{ color: '#475569' }}>
-              <li>Membangun website portofolio pribadi menggunakan React dan Tailwind CSS</li>
-              <li>Mengimplementasikan desain responsif dan animasi interaktif</li>
-            </ul>
-          </div>
+          )}
         </div>
       </div>
+
     </div>
   )
 
@@ -497,12 +528,31 @@ export default function LandingPage() {
               </span>
             </div>
 
-            {/* Desktop Menu */}
+            {/* Desktop Menu dengan Active Indicator */}
             <div className="hidden md:flex items-center space-x-8">
-              <a href="#home" className="text-slate-300 hover:text-purple-400 font-medium transition-colors">Home</a>
-              <a href="#tentang" className="text-slate-300 hover:text-purple-400 font-medium transition-colors">Tentang</a>
-              <a href="#keahlian" className="text-slate-300 hover:text-purple-400 font-medium transition-colors">Keahlian</a>
-              <a href="#portofolio" className="text-slate-300 hover:text-purple-400 font-medium transition-colors">Portofolio</a>
+              {[
+                { id: 'home', label: 'Home' },
+                { id: 'tentang', label: 'Tentang' },
+                { id: 'keahlian', label: 'Keahlian' },
+                { id: 'portofolio', label: 'Portofolio' },
+                { id: 'kontak', label: 'Kontak' },
+              ].map((menu) => (
+                <a
+                  key={menu.id}
+                  href={`#${menu.id}`}
+                  onClick={() => setActiveMenu(menu.id)}
+                  className="relative text-slate-300 hover:text-purple-400 font-medium transition-colors py-2 group"
+                >
+                  {menu.label}
+                  {/* Garis ungu di bawah teks menu yang aktif */}
+                  <span
+                    className={`absolute bottom-0 left-0 h-0.5 bg-purple-500 transition-all duration-300 ease-out ${
+                      activeMenu === menu.id ? 'w-full' : 'w-0 group-hover:w-full'
+                    }`}
+                    style={{ boxShadow: activeMenu === menu.id ? '0 0 8px rgba(168, 85, 247, 0.6)' : 'none' }}
+                  />
+                </a>
+              ))}
               <button
                 onClick={() => navigate({ to: '/login' })}
                 className="flex items-center gap-2 bg-indigo-900/40 text-purple-400 px-4 py-2 rounded-full font-semibold hover:bg-indigo-900/60 transition-all shadow-sm border border-indigo-700/50"
@@ -514,22 +564,48 @@ export default function LandingPage() {
 
             {/* Mobile Menu Button */}
             <div className="md:hidden flex items-center">
-              <button onClick={() => navigate({ to: '/login' })} className="text-purple-400 p-2" aria-label="Login Admin">
+              <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-purple-400 p-2" aria-label="Toggle menu">
                 {isMobileMenuOpen ? <X size={26} /> : <Menu size={26} />}
               </button>
             </div>
           </div>
         </div>
 
-        {/* Mobile Menu Panel */}
+        {/* Mobile Menu Panel dengan Active Indicator */}
         {isMobileMenuOpen && (
-          <div className="md:hidden bg-white border-b border-indigo-800/40 absolute w-full shadow-lg">
-            <div className="px-4 pt-2 pb-6 space-y-3 flex flex-col">
-              <a href="#home" onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2 text-slate-300 hover:bg-indigo-900/40 rounded-md">Home</a>
-              <a href="#tentang" onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2 text-slate-300 hover:bg-indigo-900/40 rounded-md">Tentang</a>
-              <a href="#keahlian" onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2 text-slate-300 hover:bg-indigo-900/40 rounded-md">Keahlian</a>
-              <a href="#portofolio" onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2 text-slate-300 hover:bg-indigo-900/40 rounded-md">Portofolio</a>
-              <button onClick={() => navigate({ to: '/login' })} className="mt-1 flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-md font-medium shadow-sm">
+          <div className="md:hidden bg-slate-900/95 border-b border-indigo-800/40 absolute w-full shadow-lg backdrop-blur-md">
+            <div className="px-4 pt-2 pb-6 space-y-1 flex flex-col">
+              {[
+                { id: 'home', label: 'Home' },
+                { id: 'tentang', label: 'Tentang' },
+                { id: 'keahlian', label: 'Keahlian' },
+                { id: 'portofolio', label: 'Portofolio' },
+              ].map((menu) => (
+                <a
+                  key={menu.id}
+                  href={`#${menu.id}`}
+                  onClick={() => {
+                    setIsMobileMenuOpen(false)
+                    setActiveMenu(menu.id)
+                  }}
+                  className={`relative block px-3 py-3 rounded-md transition-all ${
+                    activeMenu === menu.id
+                      ? 'text-purple-400 bg-indigo-900/40 font-semibold'
+                      : 'text-slate-300 hover:bg-indigo-900/40 hover:text-purple-400'
+                  }`}
+                >
+                  <span className="relative">
+                    {menu.label}
+                    {/* Garis ungu di bawah teks menu mobile yang aktif */}
+                    <span
+                      className={`absolute -bottom-1 left-0 h-0.5 bg-purple-500 transition-all duration-300 ${
+                        activeMenu === menu.id ? 'w-full' : 'w-0'
+                      }`}
+                    />
+                  </span>
+                </a>
+              ))}
+              <button onClick={() => navigate({ to: '/login' })} className="mt-2 flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-md font-medium shadow-sm">
                 <Lock size={16} /> Login Admin
               </button>
             </div>
@@ -565,16 +641,6 @@ export default function LandingPage() {
               >
                 Hubungi Saya
               </a>
-            </div>
-
-            {/* Accent chips */}
-            <div className="flex flex-wrap justify-center gap-2 pt-5">
-              <span className="px-4 py-2 rounded-full bg-indigo-900/40 border border-indigo-800/40 text-indigo-200 text-sm font-semibold">
-                Front-End • Tailwind
-              </span>
-              <span className="px-4 py-2 rounded-full bg-purple-900/30 border border-indigo-800/40 text-purple-200 text-sm font-semibold">
-                SMK RPL • Build & Learn
-              </span>
             </div>
 
             <div className="flex justify-center gap-4 pt-6">
@@ -671,18 +737,10 @@ export default function LandingPage() {
                     <div className="bg-indigo-900/40 w-14 h-14 flex items-center justify-center rounded-2xl shadow-sm text-purple-400 mb-6 ring-1 ring-indigo-500/10 group-hover:ring-purple-400/20 transition-all">
                       <LayoutDashboard size={28} />
                     </div>
-                    <h4 className="text-xl font-bold text-slate-100 mb-3 group-hover:text-purple-400 transition-colors">{skill.judul}</h4>
-                    <p className="text-slate-400 mb-6 flex-1">{skill.deskripsi}</p>
-                    <div className="flex flex-wrap gap-2">
-                      {skill.tag.split(',').map((t, idx) => (
-                        <span
-                          key={idx}
-                          className="px-3 py-1 bg-indigo-900/60 text-purple-400 text-xs font-bold rounded-full shadow-sm ring-1 ring-indigo-500/10"
-                        >
-                          {t.trim()}
-                        </span>
-                      ))}
-                    </div>
+                    <h4 className="text-lg font-bold text-slate-100 mb-2 group-hover:text-purple-400 transition-colors">{skill.judul}</h4>
+                    <p className="text-slate-400 flex-1">{skill.deskripsi}</p>
+
+
                   </div>
                 ))}
               </div>
