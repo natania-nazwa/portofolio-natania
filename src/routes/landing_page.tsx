@@ -436,7 +436,7 @@ export default function LandingPage() {
             <span className="min-w-[190px] font-medium" style={{ color: '#475569' }}>
               Portofolio
             </span>
-            <span className="text-slate-900" style={{ color: '#1e293b' }}>: https://github.com/natania-nazwa</span>
+            <span className="text-slate-900" style={{ color: '#1e293b' }}>: natania.biz.id</span>
           </div>
         </div>
       </div>
@@ -635,7 +635,7 @@ export default function LandingPage() {
 
           {/* Loading hint with bouncing dots */}
           <p className="mt-6 sm:mt-10 text-slate-500/80 text-xs sm:text-sm tracking-wide px-4">
-            <span className="inline-block animate-pulse">Memuat pengalaman</span>
+            <span className="inline-block animate-pulse">Memuat Halaman</span>
             <span className="inline-block animate-bounce-dot" style={{ animationDelay: '0.1s' }}>.</span>
             <span className="inline-block animate-bounce-dot" style={{ animationDelay: '0.2s' }}>.</span>
             <span className="inline-block animate-bounce-dot" style={{ animationDelay: '0.3s' }}>.</span>
@@ -693,6 +693,32 @@ export default function LandingPage() {
         @keyframes fadeIn {
           from { opacity: 0; }
           to { opacity: 1; }
+        }
+        /* ===== ANIMATED GRADIENT TEXT ===== */
+        @keyframes gradient-shift {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        .animate-gradient-text {
+          background: linear-gradient(
+            90deg,
+            #818cf8 0%,
+            #a78bfa 15%,
+            #c084fc 30%,
+            #e879f9 45%,
+            #c084fc 60%,
+            #a78bfa 75%,
+            #818cf8 90%,
+            #818cf8 100%
+          );
+          background-size: 300% 100%;
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+          color: transparent;
+          animation: gradient-shift 4s ease infinite;
+          filter: drop-shadow(0 2px 10px rgba(129, 140, 248, 0.3));
         }
         /* ===== SCROLL REVEAL ANIMATIONS (BIDIRECTIONAL) ===== */
         .reveal {
@@ -871,10 +897,10 @@ export default function LandingPage() {
         {/* HERO */}
         <section id="home" className="min-h-[90vh] flex items-center justify-center px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pt-8 sm:pt-0">
           <div className="max-w-4xl mx-auto text-center space-y-4 sm:space-y-6 reveal reveal-fade-up relative z-10">
-            <h4 className="text-3xl sm:text-4xl md:text-6xl font-extrabold text-slate-100 leading-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
-              <span className="relative z-10">Natania Nazwa</span>
+            <h4 className="text-3xl sm:text-4xl md:text-6xl font-extrabold leading-tight">
+              <span className="relative z-10 animate-gradient-text">Natania Nazwa</span>
               <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-600 drop-shadow-[0_2px_8px_rgba(168,85,247,0.3)]">
+              <span className="animate-gradient-text">
                 Gisella Nasyahrani
               </span>
             </h4>
