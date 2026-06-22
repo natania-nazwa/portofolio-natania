@@ -481,50 +481,55 @@ export default function LandingPage() {
           Kompetensi Teknis
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Hard Skills */}
           <div className="rounded-xl p-4 border" style={{ backgroundColor: '#eef2ff', borderColor: '#e0e7ff' }}>
-            <h3 className="text-xs font-bold uppercase mb-3" style={{ color: '#4338ca' }}>Bahasa & Database</h3>
-            <ul className="space-y-2 text-sm" style={{ color: '#334155' }}>
-              {(skills
-                .flatMap((s) => s.tag.split(',').map((t) => t.trim()))
-                .filter((t) => t && ['HTML5', 'CSS3', 'JavaScript', 'PHP', 'React.js'].includes(t)).slice(0, 4)
-              ).map((t, idx) => (
-                <li key={idx} className="flex items-center gap-2">
-                  <Code2 size={14} style={{ color: '#6366f1' }} />
-                  {t}
-                </li>
-              ))}
-            </ul>
+            <h3 className="text-xs font-bold uppercase mb-3 flex items-center gap-2" style={{ color: '#4338ca' }}>
+              <Code2 size={14} style={{ color: '#6366f1' }} />
+              Hard Skills
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {skills.length > 0 ? (
+                Array.from(new Set(skills.map((s) => s.judul).filter(Boolean))).map((judul, idx) => (
+                  <span
+                    key={idx}
+                    className="px-2.5 py-1 rounded-md text-xs font-medium border"
+                    style={{
+                      backgroundColor: '#ffffff',
+                      borderColor: '#c7d2fe',
+                      color: '#4338ca'
+                    }}
+                  >
+                    {judul}
+                  </span>
+                ))
+              ) : (
+                <span className="text-sm" style={{ color: '#94a3b8' }}>Memuat data keahlian...</span>
+              )}
+            </div>
           </div>
 
+          {/* Soft Skills */}
           <div className="rounded-xl p-4 border" style={{ backgroundColor: '#eef2ff', borderColor: '#e0e7ff' }}>
-            <h3 className="text-xs font-bold uppercase mb-3" style={{ color: '#4338ca' }}>Framework & Tools</h3>
-            <ul className="space-y-2 text-sm" style={{ color: '#334155' }}>
-              {(skills
-                .flatMap((s) => s.tag.split(',').map((t) => t.trim()))
-                .filter((t) => t && ['React.js', 'Laravel'].includes(t)).slice(0, 4)
-              ).map((t, idx) => (
-                <li key={idx} className="flex items-center gap-2">
-                  <LayoutDashboard size={14} style={{ color: '#6366f1' }} />
-                  {t}
-                </li>
+            <h3 className="text-xs font-bold uppercase mb-3 flex items-center gap-2" style={{ color: '#4338ca' }}>
+              <Award size={14} style={{ color: '#6366f1' }} />
+              Soft Skills
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {['Komunikasi', 'Kerja Sama Tim', 'Manajemen Waktu', 'Kreativitas'].map((skill, idx) => (
+                <span 
+                  key={idx} 
+                  className="px-2.5 py-1 rounded-md text-xs font-medium border"
+                  style={{ 
+                    backgroundColor: '#ffffff', 
+                    borderColor: '#c7d2fe',
+                    color: '#4338ca'
+                  }}
+                >
+                  {skill}
+                </span>
               ))}
-            </ul>
-          </div>
-
-          <div className="rounded-xl p-4 border" style={{ backgroundColor: '#eef2ff', borderColor: '#e0e7ff' }}>
-            <h3 className="text-xs font-bold uppercase mb-3" style={{ color: '#4338ca' }}>Soft Skills</h3>
-            <ul className="space-y-2 text-sm" style={{ color: '#334155' }}>
-              {(skills
-                .flatMap((s) => s.tag.split(',').map((t) => t.trim()))
-                .filter((t) => t && ['Bootstrap'].includes(t)).slice(0, 4)
-              ).map((t, idx) => (
-                <li key={idx} className="flex items-center gap-2">
-                  <Award size={14} style={{ color: '#6366f1' }} />
-                  {t}
-                </li>
-              ))}
-            </ul>
+            </div>
           </div>
         </div>
       </div>
@@ -535,22 +540,47 @@ export default function LandingPage() {
           Proyek
         </h2>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           {portfolios.length > 0 ? (
             portfolios.slice(0, 3).map((item, idx) => (
-              <div key={item.id}>
-                <div className="flex flex-wrap items-center gap-2 mb-2">
-                  <span className="font-bold text-sm" style={{ color: '#0f172a' }}>
-                    {idx + 1}. {item.judul}
-                  </span>
+              <div 
+                key={item.id} 
+                className="flex items-start gap-3 p-3 rounded-lg border"
+                style={{ backgroundColor: '#ffffff', borderColor: '#e0e7ff' }}
+              >
+                <div 
+                  className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
+                  style={{ backgroundColor: '#4f46e5', color: '#ffffff' }}
+                >
+                  {idx + 1}
                 </div>
-                <p className="text-sm leading-relaxed" style={{ color: '#475569' }}>{item.deskripsi}</p>
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <span className="font-bold text-sm truncate" style={{ color: '#0f172a' }}>
+                      {item.judul}
+                    </span>
+                    <div className="flex flex-wrap gap-1">
+                      {item.tag.split(',').map((tag, tidx) => (
+                        <span 
+                          key={tidx} 
+                          className="px-1.5 py-0.5 rounded text-[10px] font-medium"
+                          style={{ backgroundColor: '#eef2ff', color: '#4f46e5' }}
+                        >
+                          {tag.trim()}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-xs leading-relaxed" style={{ color: '#475569' }}>
+                    {item.deskripsi.split(/[.!?]/)[0].trim() + (item.deskripsi.split(/[.!?]/)[0].trim().length > 0 ? '.' : '')}
+                  </p>
+                </div>
               </div>
             ))
           ) : (
-            <div>
-              <p className="text-sm" style={{ color: '#475569' }}>
-                Belum ada proyek.
+            <div className="p-3 rounded-lg border text-center" style={{ backgroundColor: '#ffffff', borderColor: '#e0e7ff' }}>
+              <p className="text-sm" style={{ color: '#94a3b8' }}>
+                Belum ada proyek yang ditampilkan.
               </p>
             </div>
           )}
