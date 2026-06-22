@@ -652,7 +652,7 @@ export default function LandingPage() {
         }} />
 
         {/* Dark Mode Toggle on Intro */}
-        <div className="fixed bottom-6 right-6 z-50">
+        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50">
           <ThemeToggle />
         </div>
 
@@ -754,7 +754,7 @@ export default function LandingPage() {
 
   // ===== MAIN LANDING PAGE =====
   return (
-    <div className={`min-h-screen font-sans overflow-x-hidden relative transition-colors duration-500 ${
+    <div className={`min-h-screen font-sans overflow-x-hidden relative transition-colors duration-500 w-full max-w-[100vw] ${
       isDarkMode 
         ? 'bg-gradient-to-br from-slate-950 via-indigo-950 to-purple-950 text-slate-100' 
         : 'bg-gradient-to-br from-indigo-100 via-purple-100/80 to-fuchsia-100/50 text-slate-800'
@@ -861,7 +861,7 @@ export default function LandingPage() {
       </div>
 
       {/* Dark Mode Toggle Button */}
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50">
         <ThemeToggle />
       </div>
 
@@ -874,7 +874,7 @@ export default function LandingPage() {
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-14 sm:h-16">
             {/* Logo */}
             <button
               onClick={goToLanding}
@@ -957,7 +957,7 @@ export default function LandingPage() {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className={`md:hidden border-t transition-colors duration-500 ${
+          <div className={`md:hidden border-t transition-colors duration-500 max-h-[80vh] overflow-y-auto overscroll-contain ${
             isDarkMode
               ? 'bg-slate-900/95 border-indigo-800/40'
               : 'bg-white/95 border-indigo-200/40'
@@ -978,7 +978,7 @@ export default function LandingPage() {
                     const element = document.getElementById(item.id)
                     if (element) element.scrollIntoView({ behavior: 'smooth' })
                   }}
-                  className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 flex items-center justify-between ${
+                  className={`w-full text-left px-4 py-4 rounded-lg text-sm font-medium transition-all duration-300 flex items-center justify-between min-h-[48px] ${
                     activeMenu === item.id
                       ? isDarkMode
                         ? 'text-purple-400 font-bold bg-indigo-900/30 border-l-2 border-purple-400'
@@ -1014,18 +1014,18 @@ export default function LandingPage() {
       </nav>
 
       {/* MAIN */}
-      <main className="relative z-10 pt-16">
+      <main className="relative z-10 pt-14 sm:pt-16">
         {/* HERO */}
-        <section id="home" className="min-h-[90vh] flex items-center justify-center px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pt-8 sm:pt-0">
+        <section id="home" className="min-h-[90vh] flex items-center justify-center px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pt-16 sm:pt-8 w-full">
           <div className="max-w-4xl mx-auto text-center space-y-4 sm:space-y-6 reveal reveal-fade-up relative z-10">
-            <h4 className="text-3xl sm:text-4xl md:text-6xl font-extrabold leading-tight">
+            <h4 className="text-2xl sm:text-4xl md:text-6xl font-extrabold leading-tight">
               <span className="relative z-10 animate-gradient-text">Natania Nazwa</span>
               <br />
               <span className="animate-gradient-text">
                 Gisella Nasyahrani
               </span>
             </h4>
-            <p className={`text-sm sm:text-base md:text-lg max-w-2xl mx-auto leading-relaxed px-2 sm:px-0 drop-shadow-[0_1px_4px_rgba(0,0,0,0.4)] transition-colors duration-500 ${
+            <p className={`text-base sm:text-base md:text-lg max-w-2xl mx-auto leading-relaxed px-4 sm:px-0 drop-shadow-[0_1px_4px_rgba(0,0,0,0.4)] transition-colors duration-500 ${
               isDarkMode ? 'text-slate-300' : 'text-slate-600'
             }`}>
               Di era digital saat ini, dunia coding menjadi salah satu keterampilan penting yang terus berkembang. Sebagai siswa SMK jurusan Rekayasa Perangkat Lunak (RPL), proses belajar ini menjadi langkah awal untuk memahami bagaimana teknologi dibangun dan digunakan.
@@ -1033,7 +1033,7 @@ export default function LandingPage() {
             <div className="flex flex-wrap justify-center gap-3 pt-4 px-2">
               <a
                 href="#portofolio"
-                className={`flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold transition-all shadow-lg hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70 focus-visible:ring-offset-2 text-sm sm:text-base ${
+                className={`flex items-center gap-2 px-5 sm:px-6 py-3 sm:py-3 rounded-xl font-semibold transition-all shadow-lg hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70 focus-visible:ring-offset-2 text-base sm:text-base min-h-[48px] ${
                   isDarkMode 
                     ? 'bg-indigo-600 hover:bg-indigo-900/40 text-white shadow-indigo-600/30 focus-visible:ring-offset-slate-950' 
                     : 'bg-purple-600 hover:bg-purple-700 text-white shadow-purple-500/25 focus-visible:ring-offset-white'
@@ -1043,7 +1043,7 @@ export default function LandingPage() {
               </a>
               <a
                 href="#kontak"
-                className={`flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold transition-all hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70 focus-visible:ring-offset-2 text-sm sm:text-base ${
+                className={`flex items-center gap-2 px-5 sm:px-6 py-3 sm:py-3 rounded-xl font-semibold transition-all hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70 focus-visible:ring-offset-2 text-base sm:text-base min-h-[48px] ${
                   isDarkMode 
                     ? 'bg-transparent border-2 border-purple-500/50 hover:border-purple-400 text-purple-400 focus-visible:ring-offset-slate-950' 
                     : 'bg-transparent border-2 border-indigo-500 hover:border-indigo-600 text-purple-600 hover:text-indigo-700 focus-visible:ring-offset-white'
@@ -1058,7 +1058,7 @@ export default function LandingPage() {
                 href="https://github.com/natania-nazwa"
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`p-2.5 sm:p-3 rounded-full shadow-sm border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70 focus-visible:ring-offset-2 ${
+                className={`p-3 sm:p-3 rounded-full shadow-sm border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70 focus-visible:ring-offset-2 min-w-[44px] min-h-[44px] flex items-center justify-center ${
                   isDarkMode 
                     ? 'bg-slate-900/70 text-slate-400 hover:text-purple-400 hover:bg-indigo-900/40 border-indigo-800/40 focus-visible:ring-offset-slate-950' 
                     : 'bg-gradient-to-br from-indigo-50/90 via-purple-50/80 to-fuchsia-50/60 text-slate-500 hover:text-purple-600 hover:from-indigo-100 hover:via-purple-100 hover:to-fuchsia-100 border border-indigo-200/30 focus-visible:ring-offset-white'
@@ -1068,7 +1068,7 @@ export default function LandingPage() {
               </a>
               <a
                 href={contactMailto}
-                className={`p-2.5 sm:p-3 rounded-full shadow-sm border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70 focus-visible:ring-offset-2 ${
+                className={`p-3 sm:p-3 rounded-full shadow-sm border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70 focus-visible:ring-offset-2 min-w-[44px] min-h-[44px] flex items-center justify-center ${
                   isDarkMode 
                     ? 'bg-slate-900/70 text-slate-400 hover:text-purple-400 hover:bg-indigo-900/40 border-indigo-800/40 focus-visible:ring-offset-slate-950' 
                     : 'bg-gradient-to-br from-indigo-50/90 via-purple-50/80 to-fuchsia-50/60 text-slate-500 hover:text-purple-600 hover:from-indigo-100 hover:via-purple-100 hover:to-fuchsia-100 border border-indigo-200/30 focus-visible:ring-offset-white'
@@ -1081,9 +1081,9 @@ export default function LandingPage() {
         </section>
 
         {/* TENTANG */}
-        <section id="tentang" className="py-20">
+        <section id="tentang" className="py-12 sm:py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center reveal reveal-fade-up">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center reveal reveal-fade-up">
               <div className="relative flex justify-center flex-col items-center">
                 <div className={`w-80 h-[28rem] rounded-3xl rotate-3 opacity-15 absolute top-0 left-1/2 -translate-x-1/2 transition-colors duration-500 ${
                   isDarkMode ? 'bg-indigo-900/400' : 'bg-purple-300/400'
@@ -1091,7 +1091,7 @@ export default function LandingPage() {
                 <img
                   src="natania-portofolio.jpeg"
                   alt="Foto Profil"
-                  className={`relative z-10 w-80 h-[28rem] object-cover rounded-3xl border transition-all duration-500 ${
+                  className={`relative z-10 w-64 sm:w-80 h-[22rem] sm:h-[28rem] object-cover rounded-3xl border transition-all duration-500 ${
                     isDarkMode 
                       ? 'shadow-[0_20px_60px_rgba(79,70,229,0.4)] border-indigo-800/40' 
                       : 'shadow-[0_20px_60px_rgba(147,51,234,0.3)] border-purple-200/40'
@@ -1099,7 +1099,7 @@ export default function LandingPage() {
                 />
                 <button
                   onClick={() => setIsCvModalOpen(true)}
-                  className={`relative z-10 mt-6 flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all shadow-lg hover:-translate-y-1 border backdrop-blur-sm ${
+                  className={`relative z-10 mt-6 flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all shadow-lg hover:-translate-y-1 border backdrop-blur-sm min-h-[48px] ${
                     isDarkMode 
                       ? 'bg-indigo-600/80 hover:bg-indigo-500 text-white shadow-indigo-600/30 border-indigo-400/50' 
                       : 'bg-purple-600 hover:bg-purple-700 text-white shadow-purple-500/25 border-indigo-300/40'
@@ -1127,14 +1127,14 @@ export default function LandingPage() {
                   Melalui PKL di software house, saya ingin mendapatkan pengalaman langsung dari industri agar kemampuan saya dalam membuat website bisa semakin berkembang.
                 </p>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mt-6">
                   {[
                     { icon: <User className={`mb-2 ${isDarkMode ? 'text-purple-400' : 'text-indigo-600'}`} />, title: 'Motivasi', desc: 'Belajar & Berkembang' },
                     { icon: <LayoutDashboard className={`mb-2 ${isDarkMode ? 'text-purple-400' : 'text-indigo-600'}`} />, title: 'Fokus', desc: 'Front-End Development' },
                     { icon: <Mail className={`mb-2 ${isDarkMode ? 'text-purple-400' : 'text-indigo-600'}`} />, title: 'Email', desc: 'nazwanasyahrani@gmail.com' },
                     { icon: <FaInstagram className={`mb-2 ${isDarkMode ? 'text-purple-400' : 'text-indigo-600'}`} />, title: 'Instagram', desc: '@ntninzwgsla' },
                   ].map((item, idx) => (
-                    <div key={idx} className={`p-4 rounded-2xl border hover:shadow-md transition-all duration-500 ${
+                    <div key={idx} className={`p-4 rounded-2xl border hover:shadow-md transition-all duration-500 min-h-[80px] ${
                       isDarkMode 
                         ? 'bg-slate-900/70 border-indigo-800/40' 
                         : 'bg-gradient-to-br from-indigo-50/90 via-purple-50/80 to-fuchsia-50/60 border-indigo-200/40 shadow-sm'
@@ -1151,7 +1151,7 @@ export default function LandingPage() {
         </section>
 
         {/* KEAHLIAN */}
-        <section id="keahlian" className={`py-20 transition-colors duration-500 ${
+        <section id="keahlian" className={`py-12 sm:py-20 transition-colors duration-500 ${
           isDarkMode ? 'bg-slate-900/60' : 'bg-gradient-to-br from-indigo-100/70 via-purple-100/60 to-fuchsia-100/40'
         }`}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1169,7 +1169,7 @@ export default function LandingPage() {
                 {skills.map((skill, idx) => (
                   <div
                     key={skill.id}
-                    className={`group p-5 rounded-3xl border hover:shadow-lg transition-all hover:-translate-y-1 flex flex-col min-h-[280px] reveal reveal-scale-up ${
+                    className={`group p-4 sm:p-5 rounded-2xl sm:rounded-3xl border hover:shadow-lg transition-all hover:-translate-y-1 flex flex-col min-h-[260px] sm:min-h-[280px] reveal reveal-scale-up ${
                       isDarkMode 
                         ? 'bg-slate-900/70 border-indigo-800/40' 
                         : 'bg-gradient-to-br from-indigo-50/90 via-purple-50/80 to-fuchsia-50/60 border-indigo-200/40 shadow-sm'
@@ -1218,7 +1218,7 @@ export default function LandingPage() {
         </section>
 
         {/* PORTOFOLIO */}
-        <section id="portofolio" className="py-20">
+        <section id="portofolio" className="py-12 sm:py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col md:flex-row justify-between items-end mb-8 sm:mb-12 reveal reveal-fade-up px-4">
               <div className="max-w-2xl">
@@ -1231,10 +1231,10 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {isLoadingPortfolios ? (
               <div className="col-span-full">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                   {Array.from({ length: 6 }).map((_, idx) => (
                     <div
                       key={idx}
@@ -1320,7 +1320,7 @@ export default function LandingPage() {
         </section>
 
         {/* KONTAK */}
-        <section id="kontak" className={`py-20 border-t transition-colors duration-500 ${
+        <section id="kontak" className={`py-12 sm:py-20 border-t transition-colors duration-500 ${
           isDarkMode ? 'bg-slate-900/60 border-indigo-800/40' : 'bg-gradient-to-br from-indigo-100/60 via-purple-100/50 to-fuchsia-100/30 border-indigo-200/30'
         }`}>
           <div className={`absolute top-0 right-0 w-80 h-80 opacity-10 rounded-full blur-3xl transform translate-x-1/3 -translate-y-1/3 transition-colors duration-500 ${
@@ -1345,7 +1345,7 @@ export default function LandingPage() {
               Portofolio ini berisi hasil pembelajaran dan proyek yang telah saya kerjakan. Mari terhubung dan berbagi wawasan seputar teknologi.
             </p>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 max-w-3xl mx-auto reveal reveal-fade-up px-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 max-w-3xl mx-auto reveal reveal-fade-up px-2 sm:px-4">
 
               {/* Phone Card */}
               <div className="relative group animate-fade-in-up" style={{ animationDelay: '0.35s' }}>
@@ -1372,19 +1372,19 @@ export default function LandingPage() {
                 </div>
                 <a
                   href={"tel:+6281335934870"}
-                  className={`p-4 sm:p-6 rounded-2xl border hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70 focus-visible:ring-offset-2 ${
+                  className={`p-3 sm:p-6 rounded-xl sm:rounded-2xl border hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/70 focus-visible:ring-offset-2 min-h-[80px] sm:min-h-0 ${
                     isDarkMode 
                       ? 'bg-slate-900/80 border-indigo-800/40 hover:shadow-indigo-900/20 focus-visible:ring-offset-slate-950' 
                       : 'bg-gradient-to-br from-indigo-50/90 via-purple-50/80 to-fuchsia-50/60 border-indigo-200/40 hover:shadow-md hover:shadow-indigo-200/20 focus-visible:ring-offset-white'
                   }`}
                 >
-                  <div className={`w-10 h-10 sm:w-14 sm:h-14 flex items-center justify-center rounded-2xl mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform ${
+                  <div className={`w-8 h-8 sm:w-14 sm:h-14 flex items-center justify-center rounded-xl sm:rounded-2xl mx-auto mb-2 sm:mb-4 group-hover:scale-110 transition-transform ${
                     isDarkMode ? 'bg-indigo-900/40 text-purple-400' : 'bg-purple-100 text-purple-600'
                   }`}>
                     <Phone size={22} className="sm:w-7 sm:h-7" />
                   </div>
                   <p className={`text-xs sm:text-sm font-medium mb-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Telepon</p>
-                  <p className={`font-bold text-xs sm:text-sm group-hover:transition-colors ${
+                  <p className={`font-bold text-[10px] sm:text-sm group-hover:transition-colors ${
                     isDarkMode ? 'text-slate-100 group-hover:text-purple-400' : 'text-slate-900 group-hover:text-indigo-700'
                   }`}>+62 813-3593-4870</p>
                 </a>
@@ -1421,7 +1421,7 @@ export default function LandingPage() {
                       : 'bg-gradient-to-br from-indigo-50/90 via-purple-50/80 to-fuchsia-50/60 border-indigo-200/40 hover:shadow-md hover:shadow-indigo-200/20 focus-visible:ring-offset-white'
                   }`}
                 >
-                  <div className={`w-10 h-10 sm:w-14 sm:h-14 flex items-center justify-center rounded-2xl mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform ${
+                  <div className={`w-8 h-8 sm:w-14 sm:h-14 flex items-center justify-center rounded-xl sm:rounded-2xl mx-auto mb-2 sm:mb-4 group-hover:scale-110 transition-transform ${
                     isDarkMode ? 'bg-indigo-900/40 text-purple-400' : 'bg-purple-100 text-purple-600'
                   }`}>
                     <Mail size={22} className="sm:w-7 sm:h-7" />
@@ -1513,7 +1513,7 @@ export default function LandingPage() {
                       : 'bg-gradient-to-br from-indigo-50/90 via-purple-50/80 to-fuchsia-50/60 border-indigo-200/40 hover:shadow-md hover:shadow-indigo-200/20 focus-visible:ring-offset-white'
                   }`}
                 >
-                  <div className={`w-10 h-10 sm:w-14 sm:h-14 flex items-center justify-center rounded-2xl mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform ${
+                  <div className={`w-8 h-8 sm:w-14 sm:h-14 flex items-center justify-center rounded-xl sm:rounded-2xl mx-auto mb-2 sm:mb-4 group-hover:scale-110 transition-transform ${
                     isDarkMode ? 'bg-indigo-900/40 text-purple-400' : 'bg-purple-100 text-purple-600'
                   }`}>
                     <FaInstagram size={22} className="sm:w-7 sm:h-7" />
@@ -1599,7 +1599,7 @@ export default function LandingPage() {
                       : 'bg-gradient-to-br from-indigo-50/90 via-purple-50/80 to-fuchsia-50/60 border-indigo-200/40 hover:shadow-md hover:shadow-indigo-200/20 focus-visible:ring-offset-white'
                   }`}
                 >
-                  <div className={`w-10 h-10 sm:w-14 sm:h-14 flex items-center justify-center rounded-2xl mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform ${
+                  <div className={`w-8 h-8 sm:w-14 sm:h-14 flex items-center justify-center rounded-xl sm:rounded-2xl mx-auto mb-2 sm:mb-4 group-hover:scale-110 transition-transform ${
                     isDarkMode ? 'bg-indigo-900/40 text-purple-400' : 'bg-purple-100 text-purple-600'
                   }`}>
                     <School size={22} className="sm:w-7 sm:h-7" />
@@ -1615,7 +1615,7 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer className={`py-8 border-t backdrop-blur-md transition-colors duration-500 ${
+      <footer className={`py-6 sm:py-8 border-t backdrop-blur-md transition-colors duration-500 ${
         isDarkMode ? 'bg-slate-900/60 text-slate-300 border-indigo-800/40' : 'bg-gradient-to-r from-indigo-100/90 via-purple-100/80 to-fuchsia-100/70 text-slate-600 border-indigo-200/30'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
@@ -1641,7 +1641,7 @@ export default function LandingPage() {
             onClick={() => setIsCvModalOpen(false)}
           />
 
-          <div className={`relative z-10 w-full max-w-3xl mx-4 my-8 rounded-2xl border shadow-[0_0_60px_rgba(79,70,229,0.2)] overflow-hidden transition-colors duration-500 ${
+          <div className={`relative z-10 w-full max-w-3xl mx-2 sm:mx-4 my-4 sm:my-8 rounded-xl sm:rounded-2xl border shadow-[0_0_60px_rgba(79,70,229,0.2)] overflow-hidden transition-colors duration-500 ${
             isDarkMode ? 'bg-slate-900 border-indigo-700' : 'bg-gradient-to-br from-indigo-50/90 via-purple-50/80 to-fuchsia-50/60 border-indigo-200/40'
           }`}>
             <div className={`sticky top-0 z-20 flex items-center justify-between px-6 py-3 backdrop-blur-md border-b transition-colors duration-500 ${
@@ -1685,7 +1685,7 @@ export default function LandingPage() {
               </button>
             </div>
 
-            <div className={`p-8 md:p-12 transition-colors duration-500 ${isDarkMode ? 'bg-slate-900' : 'bg-gradient-to-br from-indigo-100 via-purple-100/80 to-fuchsia-100/50'}`}>
+            <div className={`p-4 sm:p-8 md:p-12 transition-colors duration-500 ${isDarkMode ? 'bg-slate-900' : 'bg-gradient-to-br from-indigo-100 via-purple-100/80 to-fuchsia-100/50'}`}>
               <CVContent />
             </div>
           </div>
