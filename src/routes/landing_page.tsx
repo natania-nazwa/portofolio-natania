@@ -1,18 +1,16 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
+
 import { useEffect, useState, useRef, type SetStateAction } from 'react'
 import { FaGithub, FaInstagram } from 'react-icons/fa'
 import {
   Briefcase,
   ChevronRight,
   Code2,
-  Lock,
   LayoutDashboard,
   Mail,
   Phone,
-  Menu,
   School,
   User,
-  X,
   MapPin,
   FileText,
   GraduationCap,
@@ -20,7 +18,11 @@ import {
   Download,
   Printer,
 } from 'lucide-react'
+
+import LandingNavbar from '../components/LandingNavbar'
 import { getPortfolios, getSkills } from '../lib/api'
+import { X } from 'lucide-react'
+
 
 // --- INTERFACE TYPESCRIPT ---
 interface Portfolio {
@@ -44,7 +46,7 @@ export const Route = createFileRoute('/landing_page')({
 })
 
 export default function LandingPage() {
-  const navigate = useNavigate()
+  // const navigate = useNavigate()
 
   const [portfolios, setPortfolios] = useState<Portfolio[]>([])
   const [skills, setSkills] = useState<Skill[]>([])
@@ -173,6 +175,7 @@ export default function LandingPage() {
     return () => observer.disconnect()
   }, [showIntro])
   const goToLanding = () => setIsMobileMenuOpen(false)
+
 
   const contactMailto = 'mailto:nazwanasyahrani@gmail.com'
   const contactInstagram = 'https://www.instagram.com/ntninzwgsla/'
@@ -795,103 +798,15 @@ export default function LandingPage() {
         <CVContent />
       </div>
 
-      {/* NAVBAR */}
-      <nav className="fixed w-full z-50 top-0 transition-all duration-300 bg-slate-900/80 backdrop-blur-md border-b border-indigo-800/40 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-2 cursor-pointer" onClick={goToLanding}>
-              <div className="bg-indigo-600 p-2 rounded-lg text-white shadow-sm">
-                <Code2 size={24} />
-              </div>
-              <span className="font-bold text-xl text-indigo-300 tracking-tight">
-                N9n<span className="text-purple-400">Port</span>
-              </span>
-            </div>
-
-            {/* Desktop Menu dengan Active Indicator */}
-            <div className="hidden md:flex items-center space-x-8">
-              {[
-                { id: 'home', label: 'Home' },
-                { id: 'tentang', label: 'Tentang' },
-                { id: 'keahlian', label: 'Keahlian' },
-                { id: 'portofolio', label: 'Portofolio' },
-                { id: 'kontak', label: 'Kontak' },
-              ].map((menu) => (
-                <a
-                  key={menu.id}
-                  href={`#${menu.id}`}
-                  onClick={() => setActiveMenu(menu.id)}
-                  className="relative text-slate-300 hover:text-purple-400 font-medium transition-colors py-2 group"
-                >
-                  {menu.label}
-                  {/* Garis ungu di bawah teks menu yang aktif */}
-                  <span
-                    className={`absolute bottom-0 left-0 h-0.5 bg-purple-500 transition-all duration-300 ease-out ${
-                      activeMenu === menu.id ? 'w-full' : 'w-0 group-hover:w-full'
-                    }`}
-                    style={{ boxShadow: activeMenu === menu.id ? '0 0 8px rgba(168, 85, 247, 0.6)' : 'none' }}
-                  />
-                </a>
-              ))}
-              <button
-                onClick={() => navigate({ to: '/login' })}
-                className="flex items-center gap-2 bg-indigo-900/40 text-purple-400 px-4 py-2 rounded-full font-semibold hover:bg-indigo-900/60 transition-all shadow-sm border border-indigo-700/50"
-                aria-label="Toggle theme"
-              >
-                <Lock size={16} /> Admin
-              </button>
-            </div>
-
-            {/* Mobile Menu Button */}
-            <div className="md:hidden flex items-center">
-              <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-purple-400 p-2" aria-label="Toggle menu">
-                {isMobileMenuOpen ? <X size={26} /> : <Menu size={26} />}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile Menu Panel dengan Active Indicator */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden bg-slate-900/95 border-b border-indigo-800/40 absolute w-full shadow-lg backdrop-blur-md">
-            <div className="px-4 pt-2 pb-6 space-y-1 flex flex-col">
-              {[
-                { id: 'home', label: 'Home' },
-                { id: 'tentang', label: 'Tentang' },
-                { id: 'keahlian', label: 'Keahlian' },
-                { id: 'portofolio', label: 'Portofolio' },
-              ].map((menu) => (
-                <a
-                  key={menu.id}
-                  href={`#${menu.id}`}
-                  onClick={() => {
-                    setIsMobileMenuOpen(false)
-                    setActiveMenu(menu.id)
-                  }}
-                  className={`relative block px-3 py-3 rounded-md transition-all ${
-                    activeMenu === menu.id
-                      ? 'text-purple-400 bg-indigo-900/40 font-semibold'
-                      : 'text-slate-300 hover:bg-indigo-900/40 hover:text-purple-400'
-                  }`}
-                >
-                  <span className="relative">
-                    {menu.label}
-                    {/* Garis ungu di bawah teks menu mobile yang aktif */}
-                    <span
-                      className={`absolute -bottom-1 left-0 h-0.5 bg-purple-500 transition-all duration-300 ${
-                        activeMenu === menu.id ? 'w-full' : 'w-0'
-                      }`}
-                    />
-                  </span>
-                </a>
-              ))}
-              <button onClick={() => navigate({ to: '/login' })} className="mt-2 flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-md font-medium shadow-sm">
-                <Lock size={16} /> Login Admin
-              </button>
-            </div>
-          </div>
-        )}
-      </nav>
+      {/* NAVBAR (refactor ke component reusable) */}
+      <LandingNavbar
+        variant="landing"
+        activeMenu={activeMenu}
+        setActiveMenu={setActiveMenu}
+        isMobileMenuOpen={isMobileMenuOpen}
+        setIsMobileMenuOpen={setIsMobileMenuOpen}
+        onLogoClick={goToLanding}
+      />
 
       {/* MAIN */}
       <main className="relative z-10 pt-16">
@@ -1101,7 +1016,7 @@ export default function LandingPage() {
                         }}
                       />
 <div className="absolute bottom-4 left-4 z-20 flex gap-2">
-                        {item.tag.split(',').slice(0, 2).map((tech, idx) => (
+                        {item.tag.split(',').map((tech, idx) => (
                           <span key={idx} className="px-2.5 py-1 bg-slate-900/40 backdrop-blur-md text-white text-xs font-bold rounded-lg border border-white/20 shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
                             {tech.trim()}
                           </span>
