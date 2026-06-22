@@ -1656,7 +1656,7 @@ export default function LandingPage() {
             </span>
           </div>
           <p className={`text-sm text-center md:text-left transition-colors duration-500 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-            &copy; {new Date().getFullYear()} dibuat oleh Natania Nazwa Gisella Nasyahrani
+            &copy; {new Date().getFullYear()} dibuat oleh Natania 
           </p>
         </div>
       </footer>
