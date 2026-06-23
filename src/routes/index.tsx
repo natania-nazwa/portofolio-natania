@@ -34,6 +34,14 @@ interface Portfolio {
   gambar: string
   tag: string
   github: string
+
+  // detail project (dari backend)
+  features?: string[]
+  startDate?: string | null
+  endDate?: string | null
+  roles?: string[]
+  workType?: 'Individu' | 'Tim' | null
+  durasi?: { days: number } | null
 }
 
 interface Skill {
@@ -120,7 +128,7 @@ export default function LandingPage() {
   const cvRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    getPortfolios()
+    getPortfolios({})
       .then((res: { success: any; data: SetStateAction<Portfolio[]> }) => {
         if (res.success) setPortfolios(res.data)
         setIsLoadingPortfolios(false)
@@ -161,7 +169,7 @@ export default function LandingPage() {
               }
             })
           },
-          { threshold: 0.3 }
+          { threshold: 0.1, rootMargin: '-70px 0px -50% 0px' }
         )
         observer.observe(element)
         observers.push(observer)
@@ -555,12 +563,13 @@ export default function LandingPage() {
                   {idx + 1}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <span className="font-bold text-sm truncate" style={{ color: '#0f172a' }}>
-                      {item.judul}
-                    </span>
-                    <div className="flex flex-wrap gap-1">
-                      {item.tag.split(',').map((tag, tidx) => (
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <span className="font-bold text-sm truncate" style={{ color: '#0f172a' }}>
+                          {item.judul}
+                        </span>
+                        {/* tech */}
+                        <div className="flex flex-wrap gap-1">
+                          {item.tag.split(',').map((tag, tidx) => (
                         <span 
                           key={tidx} 
                           className="px-1.5 py-0.5 rounded text-[10px] font-medium"
@@ -571,9 +580,46 @@ export default function LandingPage() {
                       ))}
                     </div>
                   </div>
-                  <p className="text-xs leading-relaxed" style={{ color: '#475569' }}>
+                      <p className="text-xs leading-relaxed" style={{ color: '#475569' }}>
                     {item.deskripsi.split(/[.!?]/)[0].trim() + (item.deskripsi.split(/[.!?]/)[0].trim().length > 0 ? '.' : '')}
                   </p>
+
+                  {/* Project detail fields */}
+                  <div className="mt-2 space-y-2">
+                    {item.features && item.features.length > 0 && (
+                      <div>
+                        <div className="text-[11px] font-bold" style={{ color: '#4f46e5' }}>Fitur</div>
+                        <ul className="mt-1 space-y-1">
+                          {item.features.slice(0, 5).map((f, i) => (
+                            <li key={`${f}-${i}`} className="text-xs" style={{ color: '#64748b' }}>
+                              ✓ {f}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {(item.roles && item.roles.length > 0) && (
+                      <div>
+                        <div className="text-[11px] font-bold" style={{ color: '#4f46e5' }}>Role</div>
+                        <div className="mt-1 text-xs" style={{ color: '#475569' }}>
+                          {item.roles.join(', ')}
+                        </div>
+                      </div>
+                    )}
+
+                    {(item.startDate || item.endDate || item.durasi || item.workType) && (
+                      <div>
+                        <div className="text-[11px] font-bold" style={{ color: '#4f46e5' }}>Detail Pengerjaan</div>
+                        <div className="mt-1 text-xs" style={{ color: '#475569' }}>
+                          {item.startDate ? <div>Tanggal Mulai: {new Date(item.startDate).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}</div> : null}
+                          {item.endDate ? <div>Tanggal Selesai: {new Date(item.endDate).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}</div> : null}
+                          {item.durasi?.days != null ? <div>Durasi: {item.durasi.days} hari</div> : null}
+                          {item.workType ? <div>Jenis: {item.workType}</div> : null}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             ))
@@ -1326,7 +1372,9 @@ export default function LandingPage() {
                       }`}>{item.judul}</h4>
                       <p className={`text-sm mb-6 flex-1 transition-colors duration-500 ${
                         isDarkMode ? 'text-slate-300' : 'text-slate-600'
-                      }`}>{item.deskripsi}</p>
+                      }`}>
+                        {item.deskripsi.split(/[.!?]/)[0].trim() + (item.deskripsi.split(/[.!?]/)[0].trim().length > 0 ? '.' : '')}
+                      </p>
                       <div className={`pt-4 border-t flex justify-between items-center ${
                         isDarkMode ? 'border-indigo-800/40' : 'border-purple-200/40'
                       }`}>
@@ -1339,6 +1387,14 @@ export default function LandingPage() {
                           }`}
                         >
                           View on GitHub <FaGithub size={16} />
+                        </a>
+                        <a
+                          href={`/detail/${item.id}`}
+                          className={`inline-flex items-center gap-1 font-bold text-sm hover:underline transition-colors duration-500 ${
+                            isDarkMode ? 'text-indigo-400' : 'text-purple-600'
+                          }`}
+                        >
+                          Detail <ChevronRight size={16} />
                         </a>
                       </div>
                     </div>

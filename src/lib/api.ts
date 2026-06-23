@@ -69,10 +69,42 @@ export const deleteSkill = async (id: string) => {
 };
 
 // ── PORTFOLIOS ────────────────────────────────────
-export const getPortfolios = async () => {
+export type ProjectWorkType = "Individu" | "Tim"
+
+export const getPortfolios = async (_projectId: any) => {
   const res = await fetch(`${BASE_URL}/api/portofolio`);
   return res.json();
 };
+
+export const getPortfolioById = async (id: string) => {
+  const isUuidV4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)
+  if (!isUuidV4) {
+    return { success: false, message: 'ID portofolio tidak valid.', status: 400, data: null }
+  }
+
+  const res = await fetch(`${BASE_URL}/api/portofolio/${id}`);
+
+
+  // Hindari exception ketika response bukan JSON (atau bukan 2xx)
+  let payload: any = null;
+  try {
+    payload = await res.json();
+  } catch {
+    payload = null;
+  }
+
+  if (!res.ok) {
+    return {
+      success: false,
+      message: payload?.message ?? `Request failed with status ${res.status}`,
+      status: res.status,
+      data: payload?.data ?? null,
+    };
+  }
+
+  return payload;
+}
+
 
 export const createPortfolio = async (data: object) => {
   const res = await fetchWithAuth("/api/portofolio", {

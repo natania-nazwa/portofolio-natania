@@ -61,6 +61,17 @@ type Skill = {
   urutan?: number
 }
 
+type ProjectRole =
+  | "Frontend Developer"
+  | "Backend Developer"
+  | "Fullstack Developer"
+  | "UI/UX Designer"
+  | "Mobile Developer"
+  | "Game Developer"
+  | "DevOps Engineer"
+
+type ProjectWorkType = "Individu" | "Tim"
+
 type Portfolio = {
   id: string
   judul: string
@@ -69,6 +80,14 @@ type Portfolio = {
   gambar?: string | null
   github?: string | null
   urutan?: number
+
+  // detail pengerjaan
+  features?: string[]
+  startDate?: string | null
+  endDate?: string | null
+  roles?: ProjectRole[]
+  workType?: ProjectWorkType | null
+  durasi?: { days: number } | null
 }
 
 export default function Dashboard() {
@@ -109,6 +128,16 @@ export default function Dashboard() {
   const [formDeskripsi, setFormDeskripsi] = useState('')
   const [formGithub, setFormGithub] = useState('')
 
+  // --- NEW: Project fields ---
+  const [formFeatures, setFormFeatures] = useState<string[]>([])
+  const [featureDraft, setFeatureDraft] = useState('')
+
+  const [formStartDate, setFormStartDate] = useState('')
+  const [formEndDate, setFormEndDate] = useState('')
+
+  const [formRoles, setFormRoles] = useState<ProjectRole[]>([])
+  const [formWorkType, setFormWorkType] = useState<ProjectWorkType>('Individu')
+
   // Skills
   const [isEditingSkill, setIsEditingSkill] = useState(false)
   const [editSkillId, setEditSkillId] = useState<string | null>(null)
@@ -142,7 +171,7 @@ export default function Dashboard() {
 
   const fetchPortfolios = async () => {
     try {
-      const res = await getPortfolios()
+      const res = await getPortfolios(undefined)
       if (res?.success && Array.isArray(res.data)) setPortfolios(res.data)
     } catch {
       showToast('Gagal mengambil data karya', 'error')
@@ -162,9 +191,28 @@ export default function Dashboard() {
       gambar: finalGambar,
       github: formGithub || 'https://github.com',
       urutan: 0,
+
+      features: formFeatures,
+      startDate: formStartDate,
+      endDate: formEndDate,
+      roles: formRoles,
+      workType: formWorkType,
     }
 
     try {
+      if (!payload.features.length) {
+        showToast('Minimal 1 fitur harus diisi.', 'error')
+        return
+      }
+      if (!payload.startDate || !payload.endDate) {
+        showToast('Tanggal mulai dan selesai wajib diisi.', 'error')
+        return
+      }
+      if (!payload.roles.length) {
+        showToast('Minimal 1 role harus dipilih.', 'error')
+        return
+      }
+
       if (isEditingPortfolio) {
         const res = await updatePortfolio(editPortfolioId as string, payload)
         if (res?.success) {
@@ -197,6 +245,13 @@ export default function Dashboard() {
     setFormGambar(portfolio.gambar ?? '')
     setImageInputType(portfolio.gambar && portfolio.gambar.startsWith('data:image') ? 'file' : 'url')
     setFormGithub(portfolio.github && portfolio.github !== 'https://github.com' ? portfolio.github : '')
+
+    setFormFeatures(portfolio.features ?? [])
+    setFormStartDate(portfolio.startDate ? String(portfolio.startDate) : '')
+    setFormEndDate(portfolio.endDate ? String(portfolio.endDate) : '')
+    setFormRoles((portfolio.roles ?? []) as ProjectRole[])
+    setFormWorkType((portfolio.workType ?? 'Individu') as ProjectWorkType)
+
     window.scrollTo({ top: 0, behavior: 'smooth' })
     showToast('Mode edit aktif.', 'success')
   }
@@ -214,6 +269,13 @@ export default function Dashboard() {
     setFormDeskripsi('')
     setFormGithub('')
     setImageInputType('url')
+
+    setFormFeatures([])
+    setFeatureDraft('')
+    setFormStartDate('')
+    setFormEndDate('')
+    setFormRoles([])
+    setFormWorkType('Individu')
   }
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -832,6 +894,169 @@ export default function Dashboard() {
                     </div>
                   </div>
 
+                  {/* FEATURES DYNAMIC */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
+                      Fitur Project <span className="text-rose-400">*</span>
+                    </label>
+
+                    <div className="flex flex-col gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
+                        <div className="sm:col-span-4">
+                          <input
+                            type="text"
+                            value={featureDraft}
+                            onChange={(e) => setFeatureDraft(e.target.value)}
+                            className="block w-full pl-4 pr-4 py-3 bg-slate-800/60 border border-slate-700/50 rounded-xl text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:border-indigo-500"
+                            placeholder="Contoh: Login & Register"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const next = featureDraft.trim()
+                            if (!next) {
+                              showToast('Fitur tidak boleh kosong.', 'error')
+                              return
+                            }
+                            if (formFeatures.includes(next)) {
+                              showToast('Fitur sudah ada di daftar.', 'error')
+                              return
+                            }
+                            setFormFeatures((prev) => [...prev, next])
+                            setFeatureDraft('')
+                          }}
+                          className="sm:col-span-1 py-3 px-4 rounded-xl font-bold text-sm bg-indigo-600 hover:bg-indigo-500 text-white shadow-md transition-all"
+                        >
+                          Tambah
+                        </button>
+                      </div>
+
+                      {formFeatures.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                          {formFeatures.map((f, idx) => (
+                            <div
+                              key={`${f}-${idx}`}
+                              className="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-indigo-900/40 border border-indigo-800/40"
+                            >
+                              <span className="text-xs font-bold text-indigo-200">✓ {f}</span>
+                              <button
+                                type="button"
+                                onClick={() => setFormFeatures((prev) => prev.filter((x) => x !== f || prev.indexOf(x) !== idx))}
+                                className="text-rose-300 hover:text-rose-200"
+                                title="Hapus fitur"
+                              >
+                                <XCircle size={16} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-sm text-slate-400">Belum ada fitur.</div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* DATE RANGE */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
+                        Tanggal Mulai <span className="text-rose-400">*</span>
+                      </label>
+                      <input
+                        type="date"
+                        value={formStartDate}
+                        onChange={(e) => setFormStartDate(e.target.value)}
+                        className="block w-full px-4 py-3 bg-slate-800/60 border border-slate-700/50 rounded-xl text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:border-indigo-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
+                        Tanggal Selesai <span className="text-rose-400">*</span>
+                      </label>
+                      <input
+                        type="date"
+                        value={formEndDate}
+                        onChange={(e) => setFormEndDate(e.target.value)}
+                        className="block w-full px-4 py-3 bg-slate-800/60 border border-slate-700/50 rounded-xl text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-700/30 focus:border-indigo-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* ROLES CHECKBOX GROUP */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
+                      Role Project <span className="text-rose-400">*</span>
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {(
+                        [
+                          'Frontend Developer',
+                          'Backend Developer',
+                          'Fullstack Developer',
+                          'UI/UX Designer',
+                          'Mobile Developer',
+                          'Game Developer',
+                          'DevOps Engineer',
+                        ] as ProjectRole[]
+                      ).map((r) => {
+                        const checked = formRoles.includes(r)
+                        return (
+                          <label
+                            key={r}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition-all ${
+                              checked
+                                ? 'bg-indigo-900/40 border-indigo-700/50'
+                                : 'bg-slate-800/40 border-slate-700/50 hover:border-indigo-600/40'
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() => {
+                                setFormRoles((prev) => {
+                                  if (prev.includes(r)) return prev.filter((x) => x !== r)
+                                  return [...prev, r]
+                                })
+                              }}
+                            />
+                            <span className={`text-sm font-semibold ${checked ? 'text-indigo-200' : 'text-slate-200'}`}>{r}</span>
+                          </label>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {/* WORK TYPE RADIO */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
+                      Jenis Pengerjaan <span className="text-rose-400">*</span>
+                    </label>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      {(['Individu', 'Tim'] as ProjectWorkType[]).map((wt) => {
+                        const checked = formWorkType === wt
+                        return (
+                          <label
+                            key={wt}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition-all ${
+                              checked
+                                ? 'bg-indigo-900/40 border-indigo-700/50'
+                                : 'bg-slate-800/40 border-slate-700/50 hover:border-indigo-600/40'
+                            }`}
+                          >
+                            <input
+                              type="radio"
+                              name="workType"
+                              checked={checked}
+                              onChange={() => setFormWorkType(wt)}
+                            />
+                            <span className={`text-sm font-semibold ${checked ? 'text-indigo-200' : 'text-slate-200'}`}>{wt}</span>
+                          </label>
+                        )
+                      })}
+                    </div>
+                  </div>
+
                   <div>
                     <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Link GitHub</label>
                     <div className="relative rounded-xl">
@@ -902,6 +1127,22 @@ export default function Dashboard() {
                               <span>{portfolio.judul}</span>
                             </h4>
                             <p className="text-slate-400 text-xs sm:text-sm line-clamp-2 pr-4">{portfolio.deskripsi}</p>
+                            <div className="flex flex-wrap items-center gap-2 pt-1">
+                              {portfolio.roles && portfolio.roles.length > 0 ? (
+                                <span className="px-2.5 py-0.5 bg-indigo-900/40 text-indigo-200 rounded-md text-xs font-bold">
+                                  Role: {portfolio.roles.join(', ')}
+                                </span>
+                              ) : null}
+                              {portfolio.workType ? (
+                                <span className="px-2.5 py-0.5 bg-slate-800/40 text-slate-200 rounded-md text-xs font-bold">
+                                  Jenis: {portfolio.workType}
+                                </span>
+                              ) : null}
+                              <span className="px-2.5 py-0.5 bg-emerald-900/30 text-emerald-200 rounded-md text-xs font-bold">
+                                Fitur: {portfolio.features?.length ?? 0}
+                              </span>
+                            </div>
+
                             <div className="flex flex-wrap items-center gap-2 pt-1">
                               {portfolio.tag.split(',').map((tech, idx) => (
                                 <span key={idx} className="px-2.5 py-0.5 bg-indigo-900/40 text-indigo-400 rounded-md text-xs font-bold">
