@@ -433,7 +433,7 @@ export default function Dashboard() {
                 Batal
               </button>
               <button
-                onClick={() => navigate({ to: '/landing_page' })}
+                onClick={() => navigate({ to: '/' })}
                 className="py-2.5 bg-rose-700 hover:bg-rose-600 text-white font-semibold rounded-xl text-sm shadow-md shadow-rose-900/30"
               >
                 Keluar

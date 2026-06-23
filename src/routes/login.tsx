@@ -84,7 +84,7 @@ export default function Login() {
       {/* Tombol Kembali */}
         <div className="absolute top-6 left-6">
           <button
-            onClick={() => navigate({ to: '/landing_page' })}
+            onClick={() => navigate({ to: '/' })}
             className="group flex items-center gap-1 text-sm font-medium text-indigo-400 hover:text-indigo-300 transition-colors duration-200 focus:outline-none"
           >
             <ArrowLeft className="w-4 h-4 transition-transform duration-200 group-hover:-translate-x-1" />
