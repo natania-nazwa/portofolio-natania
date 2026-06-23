@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { FaGithub } from 'react-icons/fa'
 import {
   Briefcase,
@@ -49,8 +49,11 @@ export default function PortfolioDetailPage() {
   const [relatedPortfolios, setRelatedPortfolios] = useState<Portfolio[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [fillProgress, setFillProgress] = useState(0)
+  const [contentVisible, setContentVisible] = useState(false)
+  const mainRef = useRef<HTMLDivElement>(null)
 
-  // ===== DARK MODE STATE =====
+  // ===== DARK MODE STATE - Always default to dark to prevent flash =====
   const [isDarkMode, setIsDarkMode] = useState(true)
 
   useEffect(() => {
@@ -71,17 +74,29 @@ export default function PortfolioDetailPage() {
     })
   }
 
+  // ===== FILL ANIMATION =====
+  useEffect(() => {
+    if (!isLoading) return
+    const interval = setInterval(() => {
+      setFillProgress((prev) => {
+        if (prev >= 100) return 0
+        return prev + 0.8
+      })
+    }, 25)
+    return () => clearInterval(interval)
+  }, [isLoading])
+
   // ===== FETCH DATA =====
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true)
+      setContentVisible(false)
 
-      // Guard supaya tidak memanggil endpoint dengan literal "$portfolioId".
-      // Jika terjadi, tampilkan fallback "Karya Tidak Ditemukan" (UI tidak berubah).
       const isUuidV4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(portfolioId))
       if (!isUuidV4) {
         console.error('Invalid portfolioId param for detail route:', portfolioId)
         setPortfolio(null)
+        setIsLoading(false)
         return
       }
 
@@ -90,7 +105,6 @@ export default function PortfolioDetailPage() {
         if (res?.success && res.data) {
           setPortfolio(res.data)
         }
-
 
         const allRes = await getPortfolios({})
         if (allRes?.success && Array.isArray(allRes.data)) {
@@ -103,6 +117,7 @@ export default function PortfolioDetailPage() {
         console.error('Error fetching portfolio:', err)
       } finally {
         setIsLoading(false)
+        setTimeout(() => setContentVisible(true), 50)
       }
     }
 
@@ -111,7 +126,7 @@ export default function PortfolioDetailPage() {
 
   // ===== SCROLL REVEAL ANIMATION =====
   useEffect(() => {
-    if (isLoading) return
+    if (isLoading || !contentVisible) return
 
     const observerOptions = {
       root: null,
@@ -133,7 +148,7 @@ export default function PortfolioDetailPage() {
     revealElements.forEach((el) => observer.observe(el))
 
     return () => observer.disconnect()
-  }, [isLoading])
+  }, [isLoading, contentVisible])
 
   // ===== THEME TOGGLE BUTTON =====
   const ThemeToggle = ({ className = '' }: { className?: string }) => (
@@ -169,20 +184,253 @@ export default function PortfolioDetailPage() {
     return diffDays
   }
 
-  // ===== LOADING STATE =====
+  // ===== SHARED BACKGROUND =====
+  const sharedBackground = (
+    <>
+      <div className={`absolute inset-0 transition-colors duration-500 ${
+        isDarkMode
+          ? 'bg-gradient-to-br from-slate-950 via-indigo-950/90 to-purple-950/80'
+          : 'bg-gradient-to-br from-indigo-100 via-purple-100/80 to-fuchsia-100/50'
+      }`} />
+      <div className={`absolute top-0 left-0 w-[300px] h-[300px] sm:w-[600px] sm:h-[600px] rounded-full filter blur-[100px] sm:blur-[150px] animate-blob ${
+        isDarkMode ? 'bg-indigo-600/20' : 'bg-purple-400/20'
+      }`} />
+      <div className={`absolute top-0 right-0 w-[250px] h-[250px] sm:w-[500px] sm:h-[500px] rounded-full filter blur-[80px] sm:blur-[130px] animate-blob ${
+        isDarkMode ? 'bg-purple-600/15' : 'bg-indigo-300/20'
+      }`} style={{ animationDelay: '2s' }} />
+      <div className={`absolute bottom-0 left-1/3 w-[280px] h-[280px] sm:w-[550px] sm:h-[550px] rounded-full filter blur-[90px] sm:blur-[140px] animate-blob ${
+        isDarkMode ? 'bg-violet-600/10' : 'bg-indigo-300/25'
+      }`} style={{ animationDelay: '4s' }} />
+      <div className={`absolute bottom-0 right-0 w-[200px] h-[200px] sm:w-[400px] sm:h-[400px] rounded-full filter blur-[70px] sm:blur-[120px] animate-blob ${
+        isDarkMode ? 'bg-fuchsia-600/10' : 'bg-fuchsia-300/20'
+      }`} style={{ animationDelay: '6s' }} />
+    </>
+  )
+
+  // ===== LOADING STATE - HURUF N DENGAN GELOMBANG AIR =====
   if (isLoading) {
     return (
-      <div className={`min-h-screen flex items-center justify-center transition-colors duration-500 ${
+      <div className={`min-h-screen flex flex-col items-center justify-center relative overflow-hidden ${
         isDarkMode ? 'bg-slate-950' : 'bg-gradient-to-br from-indigo-100 via-purple-100/80 to-fuchsia-100/50'
       }`}>
-        <div className="text-center">
-          <div className={`w-16 h-16 mx-auto mb-4 rounded-2xl animate-pulse ${
-            isDarkMode ? 'bg-indigo-900/40' : 'bg-purple-200/50'
-          }`} />
-          <div className={`h-4 w-32 mx-auto rounded animate-pulse ${
-            isDarkMode ? 'bg-slate-800' : 'bg-purple-200/50'
-          }`} />
+        {sharedBackground}
+
+        {/* Floating particles */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">
+          {[...Array(12)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute rounded-full animate-particle"
+              style={{
+                width: `${1 + (i % 2)}px`,
+                height: `${1 + (i % 2)}px`,
+                left: `${(i * 8.3) % 100}%`,
+                top: `${(i * 9.1) % 100}%`,
+                backgroundColor: i % 3 === 0
+                  ? (isDarkMode ? 'rgba(129, 140, 248, 0.5)' : 'rgba(129, 140, 248, 0.45)')
+                  : i % 3 === 1
+                    ? (isDarkMode ? 'rgba(168, 85, 247, 0.4)' : 'rgba(168, 85, 247, 0.4)')
+                    : (isDarkMode ? 'rgba(99, 102, 241, 0.45)' : 'rgba(99, 102, 241, 0.4)'),
+                animationDelay: `${i * 0.3}s`,
+                animationDuration: `${3 + (i % 4)}s`,
+              }}
+            />
+          ))}
         </div>
+
+        {/* Animated grid lines */}
+        <div className={`absolute inset-0 z-[1] ${isDarkMode ? 'opacity-[0.03]' : 'opacity-[0.08]'}`} style={{
+          backgroundImage: 'linear-gradient(rgba(99,102,241,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(99,102,241,0.5) 1px, transparent 1px)',
+          backgroundSize: '60px 60px',
+        }} />
+
+        {/* ===== HURUF N DENGAN GELOMBANG AIR ===== */}
+        <div className="relative z-10 flex flex-col items-center">
+          {/* Container huruf N */}
+          <div className="relative w-32 h-32 sm:w-40 sm:h-40">
+            <svg
+              viewBox="0 0 100 100"
+              className="w-full h-full"
+              style={{ filter: 'drop-shadow(0 0 20px rgba(99,102,241,0.3))' }}
+            >
+              <defs>
+                <linearGradient id="nGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#818cf8" />
+                  <stop offset="50%" stopColor="#a78bfa" />
+                  <stop offset="100%" stopColor="#c084fc" />
+                </linearGradient>
+                <linearGradient id="nFillGradient" x1="0%" y1="100%" x2="0%" y2="0%">
+                  <stop offset="0%" stopColor="#3b82f6" />
+                  <stop offset="30%" stopColor="#6366f1" />
+                  <stop offset="60%" stopColor="#818cf8" />
+                  <stop offset="100%" stopColor="#a78bfa" />
+                </linearGradient>
+                <linearGradient id="nWaveGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#60a5fa" stopOpacity="0.9" />
+                  <stop offset="50%" stopColor="#3b82f6" stopOpacity="0.8" />
+                  <stop offset="100%" stopColor="#1d4ed8" stopOpacity="0.95" />
+                </linearGradient>
+                <clipPath id="nClip">
+                  <path d="M15 85 L15 15 L25 15 L75 70 L75 15 L85 15 L85 85 L75 85 L25 30 L25 85 Z" />
+                </clipPath>
+                <clipPath id="nWaveClip">
+                  <path d="M15 85 L15 15 L25 15 L75 70 L75 15 L85 15 L85 85 L75 85 L25 30 L25 85 Z" />
+                </clipPath>
+              </defs>
+
+              {/* Outline N (stroke only) */}
+              <path
+                d="M15 85 L15 15 L25 15 L75 70 L75 15 L85 15 L85 85 L75 85 L25 30 L25 85 Z"
+                fill="none"
+                stroke="url(#nGradient)"
+                strokeWidth="2"
+                opacity="0.4"
+              />
+
+              {/* Base fill naik dari bawah */}
+              <rect
+                x="0"
+                y={`${100 - fillProgress}`}
+                width="100"
+                height="100"
+                fill="url(#nFillGradient)"
+                clipPath="url(#nClip)"
+                style={{ transition: 'y 0.1s linear' }}
+              />
+
+              {/* ===== GELOMBANG AIR DI ATAS FILL ===== */}
+              <g clipPath="url(#nWaveClip)">
+                {/* Wave layer 1 - paling belakang */}
+                <path
+                  d={`M0,${100 - fillProgress + 2} 
+                      Q12.5,${100 - fillProgress - 3} 25,${100 - fillProgress + 2} 
+                      T50,${100 - fillProgress + 2} 
+                      T75,${100 - fillProgress + 2} 
+                      T100,${100 - fillProgress + 2} 
+                      V120 H0 Z`}
+                  fill="rgba(96, 165, 250, 0.4)"
+                  className="animate-wave-slow"
+                />
+                {/* Wave layer 2 - tengah */}
+                <path
+                  d={`M0,${100 - fillProgress + 4} 
+                      Q12.5,${100 - fillProgress - 1} 25,${100 - fillProgress + 4} 
+                      T50,${100 - fillProgress + 4} 
+                      T75,${100 - fillProgress + 4} 
+                      T100,${100 - fillProgress + 4} 
+                      V120 H0 Z`}
+                  fill="rgba(147, 197, 253, 0.5)"
+                  className="animate-wave-medium"
+                />
+                {/* Wave layer 3 - paling depan */}
+                <path
+                  d={`M0,${100 - fillProgress + 6} 
+                      Q12.5,${100 - fillProgress + 1} 25,${100 - fillProgress + 6} 
+                      T50,${100 - fillProgress + 6} 
+                      T75,${100 - fillProgress + 6} 
+                      T100,${100 - fillProgress + 6} 
+                      V120 H0 Z`}
+                  fill="rgba(191, 219, 254, 0.6)"
+                  className="animate-wave-fast"
+                />
+              </g>
+
+              {/* Outline N lagi di atas (supaya tetap kelihatan border) */}
+              <path
+                d="M15 85 L15 15 L25 15 L75 70 L75 15 L85 15 L85 85 L75 85 L25 30 L25 85 Z"
+                fill="none"
+                stroke="url(#nGradient)"
+                strokeWidth="2"
+              />
+
+              {/* Glow effect di garis air */}
+              <line
+                x1="0"
+                y1={`${100 - fillProgress + 5}`}
+                x2="100"
+                y2={`${100 - fillProgress + 5}`}
+                stroke="rgba(147, 197, 253, 0.8)"
+                strokeWidth="1"
+                clipPath="url(#nWaveClip)"
+                className="animate-wave-glow"
+              />
+            </svg>
+
+            {/* Glow effect */}
+            <div
+              className="absolute inset-0 rounded-full"
+              style={{
+                background: `radial-gradient(circle, rgba(59,130,246,${0.1 + (fillProgress / 200)}) 0%, transparent 70%)`,
+                transition: 'background 0.3s ease',
+              }}
+            />
+          </div>
+
+          {/* Loading text */}
+          <p className={`mt-8 text-xs sm:text-sm tracking-wide transition-colors duration-500 ${
+            isDarkMode ? 'text-slate-500/80' : 'text-slate-400'
+          }`}>
+            <span className="inline-block animate-pulse">Memuat Halaman</span>
+            <span className="inline-block animate-bounce-dot" style={{ animationDelay: '0.1s' }}>.</span>
+            <span className="inline-block animate-bounce-dot" style={{ animationDelay: '0.2s' }}>.</span>
+            <span className="inline-block animate-bounce-dot" style={{ animationDelay: '0.3s' }}>.</span>
+          </p>
+
+          {/* Progress percentage */}
+          <p className={`mt-2 text-lg font-bold transition-colors duration-500 ${
+            isDarkMode ? 'text-blue-400' : 'text-blue-600'
+          }`}>
+            {Math.round(fillProgress)}%
+          </p>
+        </div>
+
+        {/* Inline styles for loading animations */}
+        <style>{`
+          @keyframes fadeInUp {
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0); }
+          }
+          @keyframes blob {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+          }
+          @keyframes particle {
+            0%, 100% { transform: translateY(0) scale(1); opacity: 0.3; }
+            50% { transform: translateY(-40px) scale(1.5); opacity: 0.6; }
+          }
+          @keyframes bounce-dot {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+          }
+          @keyframes wave-slow {
+            0% { transform: translateX(0); }
+            50% { transform: translateX(-8px); }
+            100% { transform: translateX(0); }
+          }
+          @keyframes wave-medium {
+            0% { transform: translateX(0); }
+            50% { transform: translateX(6px); }
+            100% { transform: translateX(0); }
+          }
+          @keyframes wave-fast {
+            0% { transform: translateX(0); }
+            50% { transform: translateX(-4px); }
+            100% { transform: translateX(0); }
+          }
+          @keyframes wave-glow {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+          }
+          .animate-blob { animation: blob 7s infinite; }
+          .animate-particle { animation: particle 4s ease-in-out infinite; }
+          .animate-bounce-dot { animation: bounce-dot 0.6s ease-in-out infinite; }
+          .animate-wave-slow { animation: wave-slow 3s ease-in-out infinite; }
+          .animate-wave-medium { animation: wave-medium 2s ease-in-out infinite; }
+          .animate-wave-fast { animation: wave-fast 1.5s ease-in-out infinite; }
+          .animate-wave-glow { animation: wave-glow 2s ease-in-out infinite; }
+        `}</style>
       </div>
     )
   }
@@ -219,12 +467,16 @@ export default function PortfolioDetailPage() {
 
   // ===== MAIN RENDER =====
   return (
-    <div className={`min-h-screen font-sans overflow-x-hidden relative transition-colors duration-500 w-full max-w-[100vw] ${
-      isDarkMode
-        ? 'bg-gradient-to-br from-slate-950 via-indigo-950 to-purple-950 text-slate-100'
-        : 'bg-gradient-to-br from-indigo-100 via-purple-100/80 to-fuchsia-100/50 text-slate-800'
-    }`}>
-
+    <div
+      ref={mainRef}
+      className={`min-h-screen font-sans overflow-x-hidden relative transition-opacity duration-700 ease-out w-full max-w-[100vw] ${
+        contentVisible ? 'opacity-100' : 'opacity-0'
+      } ${
+        isDarkMode
+          ? 'bg-gradient-to-br from-slate-950 via-indigo-950 to-purple-950 text-slate-100'
+          : 'bg-gradient-to-br from-indigo-100 via-purple-100/80 to-fuchsia-100/50 text-slate-800'
+      }`}
+    >
       {/* Inline styles for animations */}
       <style>{`
         @keyframes fadeIn {
@@ -260,6 +512,23 @@ export default function PortfolioDetailPage() {
           0%, 100% { box-shadow: 0 0 20px rgba(79, 70, 229, 0.2); }
           50% { box-shadow: 0 0 40px rgba(79, 70, 229, 0.4); }
         }
+        @keyframes blob {
+          0% { transform: translate(0px, 0px) scale(1); }
+          33% { transform: translate(30px, -50px) scale(1.1); }
+          66% { transform: translate(-20px, 20px) scale(0.9); }
+          100% { transform: translate(0px, 0px) scale(1); }
+        }
+        @keyframes particle {
+          0%, 100% { transform: translateY(0) scale(1); opacity: 0.3; }
+          50% { transform: translateY(-40px) scale(1.5); opacity: 0.6; }
+        }
+        @keyframes bounce-dot {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-4px); }
+        }
+        .animate-blob { animation: blob 7s infinite; }
+        .animate-particle { animation: particle 4s ease-in-out infinite; }
+        .animate-bounce-dot { animation: bounce-dot 0.6s ease-in-out infinite; }
         .animate-gradient-text {
           background: linear-gradient(
             90deg,
@@ -486,7 +755,7 @@ export default function PortfolioDetailPage() {
           </div>
 
           <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 sm:pb-12">
-            {/* Button Kembali - Dipisah dari breadcrumb agar tidak nabrak */}
+            {/* Back Button */}
             <div className="mb-4 reveal reveal-fade-up">
               <a
                 href="/#portofolio"
